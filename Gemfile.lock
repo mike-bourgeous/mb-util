@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mb-util (0.0.0.usegit)
+    mb-util (0.0.1.usegit)
 
 GEM
   remote: https://rubygems.org/
@@ -17,6 +17,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  coderay
   mb-util!
   pry
   rake (~> 13.0)
