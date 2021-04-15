@@ -34,7 +34,7 @@ module MB
 
     # Returns a copy of the String with ANSI-style escape sequences removed.
     def self.remove_ansi(str)
-      str.gsub(/\e\[[^A-Za-z]*[A-Za-z]/, '')
+      str.gsub(/\e\[[^A-Za-z~]*[A-Za-z~]/, '')
     end
 
     # Returns a String with a syntax highlighted form of the given +object+,
