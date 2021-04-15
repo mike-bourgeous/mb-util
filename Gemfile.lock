@@ -2,7 +2,6 @@ PATH
   remote: .
   specs:
     mb-util (0.0.1.usegit)
-      word_wrap
 
 GEM
   remote: https://rubygems.org/
@@ -23,6 +22,7 @@ DEPENDENCIES
   mb-util!
   pry
   rake (~> 13.0)
+  word_wrap
 
 BUNDLED WITH
    2.1.4

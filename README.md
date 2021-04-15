@@ -59,13 +59,22 @@ To use mb-util in your own Ruby projects, add this Git repo to your
 gem 'mb-util', git: 'https://github.com/mike-bourgeous/mb-util.git
 ```
 
+The utility functions will make use of the `coderay`, `pry`, and `word_wrap`
+Gems if they are available in your project, but these are optional:
+
+```ruby
+gem 'pry'
+gem 'coderay'
+gem 'word_wrap'
+```
+
 ## Examples
 
 TODO
 
 ## Testing
 
-Run `rspec`, or play with the included scripts under `bin/`.
+TODO: Run `rspec`, or TODO play with the included scripts under `bin/`.
 
 ## Contributing
 
