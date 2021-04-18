@@ -1,14 +1,48 @@
 # mb-util
 
 Utility functions for interacting with the operating system, manipulating data,
-etc.  Things that can't otherwise be categorized, or that are too small to
-warrant their own project.  This is companion code to my [educational video
-series about code and sound][0].
+etc.  These are things that can't otherwise be categorized, or that are too
+small to warrant their own project.  This is companion code to my [educational
+video series about code and sound][0].
 
 You might also be interested in [mb-sound][1], [mb-geometry][2], and [mb-math][3].
 
-I recommend using this code only for non-critical tasks, not for making
-important decisions or for mission-critical data modeling.
+I recommend using this code only for non-critical tasks.
+
+## Examples
+
+After following the [standalone installation
+instructions](#installation-and-usage), run `bin/console`.  Pry's `ls` and
+`show-source -d` commands are useful for exploring.
+
+### Removing ANSI/Xterm terminal colors from text
+
+```ruby
+MB::Util.remove_ansi("\e[1mBold\e[0m")
+# => 'Bold'
+```
+
+### Pretty-printing (if the Pry gem is present)
+
+```ruby
+txt = MB::Util.highlight({a: 1, b: 2, c: 3}, columns: 10)
+# => "{\e[33m:a\e[0m=>\e[1;34m1\e[0m, \e[33m:b\e[0m=>\e[1;34m2\e[0m, \e[33m:c\e[0m=>\e[1;34m3\e[0m}\n"
+puts txt
+# [prints colorized]
+#{:a=>1,
+# :b=>2,
+# :c=>3}
+```
+
+### Syntax highlighting (if the CodeRay gem is present)
+
+```ruby
+txt = MB::Util.syntax("def x; {a: 1}; end")
+# => "\e[32mdef\e[0m \e[1;34mx\e[0m; {\e[35ma\e[0m: \e[1;34m1\e[0m}; \e[32mend\e[0m"
+puts txt
+# [prints colorized]
+# def x; {a: 1}; end
+```
 
 ## Installation and usage
 
@@ -68,37 +102,6 @@ gem 'coderay'
 gem 'word_wrap'
 ```
 
-## Examples
-
-### Removing ANSI/Xterm terminal colors from text
-
-```ruby
-MB::Util.remove_ansi("\e[1mBold\e[0m")
-# => 'Bold'
-```
-
-### Pretty-printing (if the Pry gem is present)
-
-```ruby
-txt = MB::Util.highlight({a: 1, b: 2, c: 3}, columns: 10)
-# => "{\e[33m:a\e[0m=>\e[1;34m1\e[0m, \e[33m:b\e[0m=>\e[1;34m2\e[0m, \e[33m:c\e[0m=>\e[1;34m3\e[0m}\n"
-puts txt
-# [prints colorized]
-#{:a=>1,
-# :b=>2,
-# :c=>3}
-```
-
-### Syntax highlighting (if the CodeRay gem is present)
-
-```ruby
-txt = MB::Util.syntax("def x; {a: 1}; end")
-# => "\e[32mdef\e[0m \e[1;34mx\e[0m; {\e[35ma\e[0m: \e[1;34m1\e[0m}; \e[32mend\e[0m"
-puts txt
-# [prints colorized]
-# def x; {a: 1}; end
-```
-
 ## Testing
 
 Run `rspec`.
@@ -116,7 +119,8 @@ This project is released under a 2-clause BSD license.  See the LICENSE file.
 
 ### Dependencies
 
-TODO
+- Pry (optional)
+- CodeRay (optional)
 
 ### References
 
