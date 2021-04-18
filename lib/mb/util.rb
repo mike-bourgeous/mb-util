@@ -56,9 +56,9 @@ module MB
     # Returns a String with the given Ruby code highlighted by CodeRay.  If
     # CodeRay is not available, then a simple character highlight will be
     # applied.
-    def self.syntax(code)
+    def self.syntax(code, language = :ruby)
       require 'coderay'
-      CodeRay.scan(code.to_s, :ruby).terminal
+      CodeRay.scan(code.to_s, language || :ruby).terminal
     rescue LoadError
       Kernel.warn 'Failed to load CodeRay for syntax highlighting'
       code.to_s
