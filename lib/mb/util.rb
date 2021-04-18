@@ -29,6 +29,7 @@ module MB
       require 'word_wrap'
       WordWrap.ww(text, width - 1, true) # FIXME: doesn't ignore ANSI escapes
     rescue LoadError
+      Kernel.warn 'Failed to load the WordWrap gem'
       text
     end
 
@@ -44,6 +45,7 @@ module MB
       require 'pry'
       Pry::ColorPrinter.pp(object, '', columns || width)
     rescue LoadError
+      Kernel.warn 'Failed to load Pry for pretty-printing'
       begin
         syntax(object.inspect)
       rescue LoadError
@@ -58,6 +60,7 @@ module MB
       require 'coderay'
       CodeRay.scan(code.to_s, :ruby).terminal
     rescue LoadError
+      Kernel.warn 'Failed to load CodeRay for syntax highlighting'
       code.to_s
         .gsub(/[0-9]+/, "\e[34m\\&\e[37m")
         .gsub(/[[:upper:]][[:alpha:]_]+/, "\e[32m\\&\e[37m")
