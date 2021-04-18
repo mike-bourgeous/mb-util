@@ -22,6 +22,12 @@ MB::Util.remove_ansi("\e[1mBold\e[0m")
 # => 'Bold'
 ```
 
+Or, as a console script:
+
+```bash
+ls --color=force | bin/remove_ansi
+```
+
 ### Pretty-printing (if the Pry gem is present)
 
 ```ruby
@@ -46,8 +52,8 @@ puts txt
 
 ## Installation and usage
 
-This project contains some useful programs of its own, or you can use it as a
-Gem (with Git source) in your own projects.
+This project can be experimented with by cloning the Git repo, or you can use
+it as a Gem (with Git source) in your own projects.
 
 ### Standalone usage and development
 

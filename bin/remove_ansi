@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'mb-util'
+
+begin
+  while line = STDIN.readline
+    puts MB::Util.remove_ansi(line)
+  end
+rescue EOFError
+end
