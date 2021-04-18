@@ -125,8 +125,9 @@ This project is released under a 2-clause BSD license.  See the LICENSE file.
 
 ### Dependencies
 
-- Pry (optional)
-- CodeRay (optional)
+- [Pry](https://pry.github.io/) (optional)
+- [CodeRay](http://coderay.rubychan.de/) (optional)
+- [WordWrap](https://github.com/pazdera/word_wrap) (optional)
 
 ### References
 
