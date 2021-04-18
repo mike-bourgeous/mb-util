@@ -70,7 +70,34 @@ gem 'word_wrap'
 
 ## Examples
 
-TODO
+### Removing ANSI/Xterm terminal colors from text
+
+```ruby
+MB::Util.remove_ansi("\e[1mBold\e[0m")
+# => 'Bold'
+```
+
+### Pretty-printing (if the Pry gem is present)
+
+```ruby
+txt = MB::Util.highlight({a: 1, b: 2, c: 3}, columns: 10)
+# => "{\e[33m:a\e[0m=>\e[1;34m1\e[0m, \e[33m:b\e[0m=>\e[1;34m2\e[0m, \e[33m:c\e[0m=>\e[1;34m3\e[0m}\n"
+puts txt
+# [prints colorized]
+#{:a=>1,
+# :b=>2,
+# :c=>3}
+```
+
+### Syntax highlighting (if the CodeRay gem is present)
+
+```ruby
+txt = MB::Util.syntax("def x; {a: 1}; end")
+# => "\e[32mdef\e[0m \e[1;34mx\e[0m; {\e[35ma\e[0m: \e[1;34m1\e[0m}; \e[32mend\e[0m"
+puts txt
+# [prints colorized]
+# def x; {a: 1}; end
+```
 
 ## Testing
 
