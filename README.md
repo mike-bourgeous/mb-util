@@ -74,7 +74,7 @@ TODO
 
 ## Testing
 
-TODO: Run `rspec`, or TODO play with the included scripts under `bin/`.
+Run `rspec`.
 
 ## Contributing
 
@@ -93,7 +93,7 @@ TODO
 
 ### References
 
-TODO
+- [Terminal color sequences](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 
 [0]: https://www.youtube.com/playlist?list=PLpRqC8LaADXnwve3e8gI239eDNRO3Nhya
