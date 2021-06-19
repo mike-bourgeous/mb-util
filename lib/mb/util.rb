@@ -96,8 +96,8 @@ module MB
     def self.max_pipe_size
       case RUBY_PLATFORM
       when /linux/
-        size = File.read('/proc/sys/fs/pipe-max-size').strip.to_i rescue nil
-        size = 4096 if size <= 0 || size.nil?
+        size = File.read('/proc/sys/fs/pipe-max-size').strip.to_i rescue 4096
+        size = 4096 if size <= 0
         size
 
       else
