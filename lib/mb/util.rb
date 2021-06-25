@@ -13,13 +13,13 @@ module MB
     # The width of the terminal window, defaulting to 80 if the width can't
     # be determined.
     def self.width
-      IO.console.winsize&.last || ENV['COLUMNS']&.to_i || 80
+      IO.console&.winsize&.last || ENV['COLUMNS']&.to_i || 80
     end
 
     # The height of the terminal window, defaulting to 25 if the height can't
     # be determined.
     def self.height
-      IO.console.winsize&.first || ENV['ROWS']&.to_i || 25
+      IO.console&.winsize&.first || ENV['ROWS']&.to_i || 25
     end
 
     # Wraps the given text for the current terminal width, or 80 columns if
