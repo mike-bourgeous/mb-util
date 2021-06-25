@@ -1,5 +1,7 @@
 # mb-util
 
+[![Tests](https://github.com/mike-bourgeous/mb-util/actions/workflows/test.yml/badge.svg)](https://github.com/mike-bourgeous/mb-util/actions/workflows/test.yml)
+
 Utility functions for interacting with the operating system, manipulating data,
 etc.  These are things that can't otherwise be categorized, or that are too
 small to warrant their own project.  This is companion code to my [educational
