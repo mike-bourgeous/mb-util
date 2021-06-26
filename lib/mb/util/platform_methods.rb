@@ -6,6 +6,12 @@ module MB
     # MB::Util extends itself with this module, so use these methods via
     # MB::Util.
     module PlatformMethods
+      # Returns the current time from the system's monotonically increasing
+      # clock.  A shorthand for Process.clock_gettime(Process::CLOCK_MONOTONIC).
+      def clock_now
+        Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      end
+
       # On Linux, changes the kernel's buffer size for the given pipe.  This
       # should cause the pipe to exert more backpressure on reading or writing.
       # See F_SETPIPE_SZ in the fcntl(2) and pipe(7) manual pages for more
