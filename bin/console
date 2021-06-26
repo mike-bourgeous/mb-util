@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
-# Interactive Pry console started within the MB::Util context.
+# Interactive Pry console.
+#
+# Started within the MB::Util context for easy interactive testing.
+#
+# Note: this comment is used as part of a spec, so verify specs when changing
+# this header comment.
 
 require "bundler/setup"
 require "mb/util"

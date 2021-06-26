@@ -3,8 +3,12 @@ require 'fileutils'
 RSpec.describe(MB::Util::FileMethods) do
   describe '#read_header_comment' do
     it 'can read the header comment lines from a Ruby script' do
-      header = MB::U.read_header_comment('bin/console').join
-      expect(header).to match(/Pry/m)
+      header = MB::U.read_header_comment('bin/console')
+      expect(header.length).to eq(6)
+
+      header = header.join
+      expect(header).to match(/ Pry/m)
+      expect(header).to match(/spec/m)
       expect(header).not_to match(/^require /m)
     end
   end
