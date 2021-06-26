@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Interactive Pry console started within the MB::Util context.
 
 require "bundler/setup"
 require "mb/util"
