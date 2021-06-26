@@ -84,6 +84,10 @@ RSpec.describe(MB::Util::FileMethods) do
   describe '#prevent_mass_overwrite' do
     let(:glob) { 'tmp/mass_overwrite_????.test' }
 
+    before(:all) {
+      FileUtils.mkdir_p('tmp')
+    }
+
     def generate_files(initial, count)
       FileUtils.rm(Dir[glob])
       count.times do |t|
