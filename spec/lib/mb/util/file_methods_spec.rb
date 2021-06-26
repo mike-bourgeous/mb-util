@@ -80,4 +80,62 @@ RSpec.describe(MB::Util::FileMethods) do
       end
     end
   end
+
+  describe '#prevent_mass_overwrite' do
+    let(:glob) { 'tmp/mass_overwrite_????.test' }
+
+    def generate_files(initial, count)
+      FileUtils.rm(Dir[glob])
+      count.times do |t|
+        FileUtils.touch("tmp/mass_overwrite_#{'%04d' % (t + initial)}.test")
+      end
+    end
+
+    context 'when prompt is false' do
+      it 'does nothing if no files match the glob' do
+        generate_files(0, 0)
+        expect { MB::Util.prevent_mass_overwrite(glob, prompt: false) }.not_to raise_error
+      end
+
+      it 'raises an error if matching files exist' do
+        generate_files(12, 52)
+        expect(STDOUT).to receive(:write).with(/Not overwriting.*52/)
+        expect { MB::Util.prevent_mass_overwrite(glob, prompt: false) }.to raise_error(MB::Util::FileMethods::FileExistsError)
+      end
+    end
+
+    context 'when prompt is true' do
+      it 'does nothing if no files match the glob' do
+        generate_files(0, 0)
+        expect { MB::Util.prevent_mass_overwrite(glob, prompt: true) }.not_to raise_error
+      end
+
+      it 'deletes existing files if the user chooses to overwrite' do
+        generate_files(0, 19)
+
+        expect(STDOUT).to receive(:write).with(/19.*file.*0000/)
+        expect(STDOUT).to receive(:write).with(/Y.*N/)
+        expect(STDOUT).to receive(:write).with(/continuing/)
+
+        expect(STDIN).to receive(:readline).and_return("Y\n")
+
+        expect(Dir[glob].length).to eq(19)
+        expect { MB::Util.prevent_mass_overwrite(glob, prompt: true) }.not_to raise_error
+        expect(Dir[glob]).to be_empty
+      end
+
+      it 'raises an error if the user chooses not to overwrite' do
+        generate_files(13, 42)
+
+        expect(STDOUT).to receive(:write).with(/42.*file.*0013/)
+        expect(STDOUT).to receive(:write).with(/Y.*N/)
+        expect(STDOUT).to receive(:write).with(/Not overwriting/)
+
+        expect(STDIN).to receive(:readline).and_return("Never\n")
+
+        expect { MB::Util.prevent_mass_overwrite(glob, prompt: true) }.to raise_error(MB::Util::FileMethods::FileExistsError)
+        expect(Dir[glob].length).to eq(42)
+      end
+    end
+  end
 end

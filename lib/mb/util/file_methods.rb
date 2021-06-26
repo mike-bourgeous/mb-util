@@ -19,20 +19,61 @@ module MB
       #
       # If the file exists and +:prompt+ is false, or if the user chooses not
       # to overwrite the file, a FileExistsError is raised.
+      #
+      # Does nothing if the file does not exist.
       def prevent_overwrite(filename, prompt:)
-        if File.exist?(filename)
-          if prompt
-            STDOUT.write("\e[1;33m#{filename}\e[22m already exists.  Overwrite it?\e[0m")
+        return unless File.exist?(filename)
 
-            if prompt_yes_no
-              STDOUT.write("\e[36mOverwriting \e[1m#{filename}\e[22m.\e[0m\n")
-              return
-            end
+        if prompt
+          STDOUT.write("\e[1;33m#{filename}\e[22m already exists.  Overwrite it?\e[0m")
+
+          if prompt_yes_no
+            STDOUT.write("\e[36mOverwriting \e[1m#{filename}\e[22m.\e[0m\n")
+            return
           end
-
-          STDOUT.write("\e[31mNot overwriting existing file \e[1m#{filename}.\e[0m\n")
-          raise FileExistsError, filename
         end
+
+        STDOUT.write("\e[31mNot overwriting existing file \e[1m#{filename}.\e[0m\n")
+        raise FileExistsError, filename
+      end
+
+      # Prevents accidentally overwriting any files matching the wildcard
+      # +glob+ (see Dir#glob).
+      #
+      # If +:prompt+ is true and any files match the +glob+, the user will be
+      # asked whether to overwrite the existing files.  If the user chooses to
+      # overwrite and +:delete+ is true (the default), the existing files will
+      # be deleted before returning.
+      #
+      # If +:prompt+ is false and files match the +glob+, or if the user
+      # chooses not to overwrite files, then a FileExistsError will be raised.
+      #
+      # Does nothing if no files match the +glob+.
+      def prevent_mass_overwrite(glob, prompt:, delete: true)
+        existing_files = Dir[glob].sort
+        return if existing_files.empty?
+
+        if prompt
+          STDOUT.write("\e[1;33m#{existing_files.length}\e[22m file(s) (such as \e[1m#{existing_files.first}\e[22m) already exist.  Delete them and proceed?\e[0m")
+
+          if prompt_yes_no
+            if delete
+              STDOUT.write("\e[33mDeleting \e[1m#{existing_files.length}\e[22m files\e[0;36m and continuing.\e[0m\n")
+
+              existing_files.each do |f|
+                File.unlink(f)
+              end
+
+            else
+              STDOUT.write("\e[36mContinuing.\e[0m\n")
+            end
+
+            return
+          end
+        end
+
+        STDOUT.write("\e[31mNot overwriting \e[1m#{existing_files.count}\e[22m existing files.\e[0m\n")
+        raise FileExistsError, existing_files.first
       end
 
       # Loops printing a Yes/No prompt and asking for user input until the
