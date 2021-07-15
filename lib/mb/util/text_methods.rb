@@ -53,6 +53,69 @@ module MB
           .gsub(/["'`]+/, "\e[35m\\&\e[37m")
           .gsub(/[:,]+/, "\e[36m\\&\e[37m")
       end
+
+      def table(rows, header: nil, show_nil: false)
+        if rows.is_a?(Hash)
+          header = rows.keys
+          rows = rows.values.map { |v| Array(v) }
+          maxlen = rows.map(&:length).max
+          rows.map! { |r|
+            if r.length >= maxlen
+              r
+            else
+              r + Array.new(maxlen - r.length)
+            end
+          }
+          rows = rows.transpose
+        end
+
+        rows = Array(rows)
+        rows = rows.map { |r| Array(r).dup }
+        columns = rows.map(&:length).max
+        rows.each { |r| r[columns - 1] = nil if r.length < columns }
+
+        if header != false
+          header = (1..columns).map(&:to_s) if header.nil?
+          header = Array(header)
+          header[columns - 1] = nil if header.length < columns
+          header = header.map(&:to_s)
+          header_width = 2 + header.map(&:length).max
+        end
+
+        formatted = rows.map { |r|
+          r.map { |v|
+            (!show_nil && v.nil?) ? '' : MB::U.highlight(v).strip
+          }
+        }
+
+        column_width = 2 + formatted.flatten.map { |hl|
+          MB::U.remove_ansi(hl).length
+        }.max
+        column_width = header_width if header_width && header_width > column_width
+
+        if header
+          puts header.map.with_index { |k, idx| "\e[1;#{31 + idx % 7}m#{k.to_s.center(column_width)}\e[0m" }.join('|')
+          puts (['-' * column_width] * columns).join('+')
+        end
+
+        formatted.each do |row|
+          puts(
+            row.map { |hl|
+              colorless = MB::U.remove_ansi(hl)
+              len = colorless.length
+              extra = column_width - len
+              # TODO: align on the decimal point
+              # pre = extra / 2
+              pre = colorless.start_with?('-') ? 0 : 1
+              post = extra - pre
+              post = 0 if post < 0
+              "#{' ' * pre}#{hl}#{' ' * post}"
+            }.join('|')
+          )
+        end
+
+        nil
+      end
     end
   end
 end
