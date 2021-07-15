@@ -69,5 +69,16 @@ RSpec.describe(MB::Util::TextMethods) do
       expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|.*nil/)
       MB::U.table({a: [11, 37, 7], b: [22, 27, 'z'], c: [333, 17]}, show_nil: true)
     end
+
+    it 'can print a separator between each row' do
+      expect(MB::Util).to receive(:puts).with(/a.*\|.*b.*\|.*c/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|.*nil/)
+      MB::U.table({a: [11, 37, 7], b: [22, 27, 'z'], c: [333, 17]}, show_nil: true, separate_rows: true)
+    end
   end
 end

@@ -54,10 +54,25 @@ module MB
           .gsub(/[:,]+/, "\e[36m\\&\e[37m")
       end
 
-      def table(rows, header: nil, show_nil: false)
-        if rows.is_a?(Hash)
-          header = rows.keys
-          rows = rows.values.map { |v| Array(v) }
+      # Prints the given +data+ (either a Hash mapping column names to Arrays,
+      # or an Array of Arrays of data) in a tabular layout with color
+      # highlighting.
+      #
+      # If +:header+ is false, then a header will not be printed.  If +:header+
+      # is an Array, then its contents will be used as column labels.  If
+      # +:header+ is nil, then Hash keys will be used as column labels for a
+      # Hash, and 1-based indices will be used for an Array.
+      #
+      # If +:show_nil+ is false (the default), then nil data values will not be
+      # displayed.  If true, then nil data values will be printed as "nil".
+      #
+      # If +:separate_rows+ is true, then data rows will have a separator
+      # printed between them.  If false (the default), then only the header row
+      # will have a separator after it.
+      def table(data, header: nil, show_nil: false, separate_rows: false)
+        if data.is_a?(Hash)
+          header = data.keys
+          rows = data.values.map { |v| Array(v) }
           maxlen = rows.map(&:length).max
           rows.map! { |r|
             if r.length >= maxlen
@@ -67,6 +82,8 @@ module MB
             end
           }
           rows = rows.transpose
+        else
+          rows = data
         end
 
         rows = Array(rows)
@@ -93,12 +110,14 @@ module MB
         }.max
         column_width = header_width if header_width && header_width > column_width
 
+        separator = (['-' * column_width] * columns).join('+')
+
         if header
           puts header.map.with_index { |k, idx| "\e[1;#{31 + idx % 7}m#{k.to_s.center(column_width)}\e[0m" }.join('|')
-          puts (['-' * column_width] * columns).join('+')
+          puts separator
         end
 
-        formatted.each do |row|
+        formatted.each_with_index do |row, idx|
           puts(
             row.map { |hl|
               colorless = MB::U.remove_ansi(hl)
@@ -112,6 +131,7 @@ module MB
               "#{' ' * pre}#{hl}#{' ' * post}"
             }.join('|')
           )
+          puts separator if separate_rows && idx < formatted.length - 1
         end
 
         nil

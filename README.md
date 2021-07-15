@@ -52,6 +52,27 @@ puts txt
 # def x; {a: 1}; end
 ```
 
+### Tabular data layout
+
+```ruby
+data = {
+  a: [1, 2, 3],
+  b: [4, 5, 6],
+}
+MB::U.table(data)
+```
+
+The data is printed to the terminal (but with colors not visible here):
+
+
+```
+ a | b
+---+---
+ 1 | 4
+ 2 | 5
+ 3 | 6
+```
+
 ## Installation and usage
 
 This project can be experimented with by cloning the Git repo, or you can use
