@@ -69,7 +69,10 @@ module MB
       # If +:separate_rows+ is true, then data rows will have a separator
       # printed between them.  If false (the default), then only the header row
       # will have a separator after it.
-      def table(data, header: nil, show_nil: false, separate_rows: false)
+      #
+      # If +:raw_strings+ is false (the default is true), then strings will be
+      # syntax highlighted and displayed with quotation marks.
+      def table(data, header: nil, show_nil: false, separate_rows: false, raw_strings: true)
         if data.is_a?(Hash)
           header = data.keys
           rows = data.values.map { |v| Array(v) }
@@ -101,7 +104,16 @@ module MB
 
         formatted = rows.map { |r|
           r.map { |v|
-            (!show_nil && v.nil?) ? '' : MB::U.highlight(v).strip
+            case v
+            when nil
+              show_nil ? MB::U.highlight(v).strip : ''
+
+            when String
+              raw_strings ? v : MB::U.highlight(v).strip
+
+            else
+              MB::U.highlight(v).strip
+            end
           }
         }
 

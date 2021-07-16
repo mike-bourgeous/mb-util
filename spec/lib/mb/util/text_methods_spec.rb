@@ -80,5 +80,15 @@ RSpec.describe(MB::Util::TextMethods) do
       expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|.*nil/)
       MB::U.table({a: [11, 37, 7], b: [22, 27, 'z'], c: [333, 17]}, show_nil: true, separate_rows: true)
     end
+
+    it 'can print strings with escapes and quotes' do
+      expect(MB::Util).to receive(:puts).with(/".*abc.*\\t.*".*\|.*".*def.*"/)
+      MB::U.table([["abc\t", 'def']], header: false, raw_strings: false)
+    end
+
+    it 'can print strings raw without quotes' do
+      expect(MB::Util).to receive(:puts).with(/^[^"]*abc\a[^"]*\|[^"]*def[^"]*$/)
+      MB::U.table([["abc\a", 'def']], header: false)
+    end
   end
 end
