@@ -104,7 +104,7 @@ module MB
       # the +:comment_regexp+, removing the first instance of +:comment_regexp+
       # from each line, and skipping an initial shebang line ("#!...") if
       # present.
-      def read_header_comment(filename = $0, comment_regexp: /^#( |$)/)
+      def read_header_comment(filename = caller_locations(1,1)[0].absolute_path, comment_regexp: /^#( |$)/)
         lines = File.readlines(filename)
         lines = lines[1..-1] if lines[0] =~ /^#!/
         lines.take_while { |l| l =~ comment_regexp }.map { |l| l.sub(comment_regexp, '') }
