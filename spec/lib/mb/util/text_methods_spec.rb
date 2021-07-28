@@ -24,8 +24,68 @@ RSpec.describe(MB::Util::TextMethods) do
     end
   end
 
+  describe '#center_ansi' do
+    it 'can center a plain String' do
+      expect(MB::Util.center_ansi('abcd', 8)).to eq("  abcd  ")
+    end
+
+    it 'can center an ANSI-colored String' do
+      orig = "\e[1ma\e[33mb\e[36mc\e[22md\e[0m"
+      expect(MB::Util.center_ansi(orig, 8)).to eq("  #{orig}  ")
+      expect(MB::Util.center_ansi(orig, 10)).to eq("   #{orig}   ")
+    end
+
+    it 'returns the original String if the length is greater than the number of columns' do
+      expect(MB::Util.center_ansi('abcd', 1)).to eq('abcd')
+    end
+  end
+
   describe '#table' do
-    it 'can print a hash' do
+    it 'can use a short String as the header' do
+      expect(MB::Util).to receive(:puts).with("   \e[1mTest\e[0m    ")
+      expect(MB::Util).to receive(:puts).with('---+---+---')
+      expect(MB::Util).to receive(:puts).with(' a | b | c ')
+      MB::U.table({ a: 'a', b: 'b', c: 'c' }, header: 'Test')
+    end
+
+    it 'can use a long String as the header with fixed width columns' do
+      expect(MB::Util).to receive(:puts).with(" \e[1mTest A Longer Header\e[0m  ")
+      expect(MB::Util).to receive(:puts).with('-------+-------+-------')
+      expect(MB::Util).to receive(:puts).with(' aa    | bbb   | c     ')
+      MB::U.table({ a: 'aa', b: 'bbb', c: 'c' }, header: 'Test A Longer Header')
+    end
+
+    it 'can use a long, ANSI-formatted String as the header with variable width columns' do
+      expect(MB::Util).to receive(:puts).with(" \e[1m\e[1mTesting \e[33mLong \e[32mHeaders\e[0m\e[0m ")
+      expect(MB::Util).to receive(:puts).with('-------+-------+------')
+      expect(MB::Util).to receive(:puts).with(' a     | bbbbb | cc   ')
+      MB::U.table({ a: 'a', b: 'bbbbb', c: 'cc' }, header: "\e[1mTesting \e[33mLong \e[32mHeaders\e[0m", variable_width: true)
+    end
+
+    it 'can print fixed-width columns' do
+      expect(MB::Util).to receive(:puts).with(/1.*\|.*2.*\|.*3/)
+      expect(MB::Util).to receive(:puts).with('--------+--------+--------')
+      expect(MB::Util).to receive(:puts).with(' a      | b      | cdefgh ')
+      MB::U.table([['a', 'b', 'cdefgh']])
+    end
+
+    it 'can print variable-width columns' do
+      expect(MB::Util).to receive(:puts).with(/1.*\|.*2.*\|.*3.*\|.*4/)
+      expect(MB::Util).to receive(:puts).with('---+----+--------+---')
+      expect(MB::Util).to receive(:puts).with(' a | b2 | cdefgh | i ')
+      MB::U.table([['a', 'b2', 'cdefgh', 'i']], variable_width: true)
+    end
+
+    it 'can return the formatted lines of text' do
+      expect(MB::Util).not_to receive(:puts)
+      rows = MB::U.table([['a', 'b2', 'cdefgh', 'i']], variable_width: true, print: false)
+      expect(rows.length).to eq(3)
+      expect(rows[0]).to match(/1.*\|.*2.*\|.*3.*\|.*4/)
+      expect(rows[1]).to match(/(-+\+){3}-+/)
+      expect(rows[2]).to match(/a.*\|.*b2.*\|.*cdefgh.*\|.*i/)
+    end
+
+    it 'can print a Hash' do
       expect(MB::Util).to receive(:puts).with(/a.*\|.*b.*\|.*c/)
       expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
       expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333/)
@@ -34,7 +94,16 @@ RSpec.describe(MB::Util::TextMethods) do
       MB::U.table({a: [11, 37, 7], b: [22, 27, 'z'], c: [333, 17]})
     end
 
-    it 'can print an array' do
+    it 'can print a Hash with a custom header' do
+      expect(MB::Util).to receive(:puts).with(/q.*\|.*r.*\|.*s/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17/)
+      expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|[^nil]*$/)
+      MB::U.table({a: [11, 37, 7], b: [22, 27, 'z'], c: [333, 17]}, header: ['q', 'r', 's'])
+    end
+
+    it 'can print an Array' do
       expect(MB::Util).to receive(:puts).with(/1.*\|.*2.*\|.*3.*\|.*4/)
       expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
       expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333.*\|[^nil]*$/)
@@ -45,6 +114,22 @@ RSpec.describe(MB::Util::TextMethods) do
         [37, 27, 17, 0],
         [7, 'z']
       ])
+    end
+
+    it 'can print an Array with a custom header' do
+      expect(MB::Util).to receive(:puts).with(/q.*\|.*r.*\|.*s.*\|.*t/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333.*\|[^nil]*$/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17.*\|/)
+      expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|[^nil|]*\|[^nil|]*$/)
+      MB::U.table(
+        [
+          [11, 22, 333],
+          [37, 27, 17, 0],
+          [7, 'z']
+        ],
+        header: ['q', 'r', 's', 't']
+      )
     end
 
     it 'can omit the header' do

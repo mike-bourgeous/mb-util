@@ -23,6 +23,22 @@ module MB
         str.gsub(/\e\[[^A-Za-z~]*[A-Za-z~]/, '')
       end
 
+      # Returns a copy of +str+ centered in a width of +columns+ characters,
+      # disregarding ANSI sequences.  All whitespace characters in the String
+      # will be replaced with spaces.
+      def center_ansi(str, columns)
+        str = str.gsub(/\s/, ' ')
+        length = remove_ansi(str).length
+
+        extra = columns - length
+        pre = extra / 2
+        pre = 0 if pre < 0
+        post = extra - pre
+        post = 0 if post < 0
+
+        "#{' ' * pre}#{str}#{' ' * post}"
+      end
+
       # Returns a String with a syntax highlighted form of the given +object+,
       # using Pry's ColorPrinter.  If the ColorPrinter is not available,
       # CodeRay will be used, and failing that, the string will be bolded.
@@ -60,8 +76,10 @@ module MB
       #
       # If +:header+ is false, then a header will not be printed.  If +:header+
       # is an Array, then its contents will be used as column labels.  If
-      # +:header+ is nil, then Hash keys will be used as column labels for a
-      # Hash, and 1-based indices will be used for an Array.
+      # +:header+ is nil (the default), then Hash keys will be used as column
+      # labels for a Hash, and 1-based indices will be used for an Array.  If
+      # +:header+ is a String, then the table header will be a single column
+      # with the String centered within.
       #
       # If +:show_nil+ is false (the default), then nil data values will not be
       # displayed.  If true, then nil data values will be printed as "nil".
@@ -72,9 +90,17 @@ module MB
       #
       # If +:raw_strings+ is false (the default is true), then strings will be
       # syntax highlighted and displayed with quotation marks.
-      def table(data, header: nil, show_nil: false, separate_rows: false, raw_strings: true)
+      #
+      # If +:variable_width+ is true (the default is false), then each column
+      # may have a different width.  If false, then all columns will be the
+      # same width.
+      #
+      # If +:print+ is true (the default), then the table will be printed to
+      # STDOUT.  If false, then the formatted rows of the table will be
+      # returned as an Array of Strings.
+      def table(data, header: nil, show_nil: false, separate_rows: false, raw_strings: true, variable_width: false, print: true)
         if data.is_a?(Hash)
-          header = data.keys
+          header = data.keys if header.nil?
           rows = data.values.map { |v| Array(v) }
           maxlen = rows.map(&:length).max
           rows.map! { |r|
@@ -94,12 +120,21 @@ module MB
         columns = rows.map(&:length).max
         rows.each { |r| r[columns - 1] = nil if r.length < columns }
 
-        if header != false
+        case header
+        when String
+          # TODO: there might be a better way to expand columns to fit the
+          # header width; see code below
+          header_width = []
+
+        when false
+          header_width = []
+
+        else
           header = (1..columns).map(&:to_s) if header.nil?
           header = Array(header)
           header[columns - 1] = nil if header.length < columns
           header = header.map(&:to_s)
-          header_width = 2 + header.map(&:length).max
+          header_width = header.map { |h| MB::U.remove_ansi(h).length + 2 }
         end
 
         formatted = rows.map { |r|
@@ -117,36 +152,68 @@ module MB
           }
         }
 
-        column_width = 2 + formatted.flatten.map { |hl|
-          MB::U.remove_ansi(hl).length
-        }.max
-        column_width = header_width if header_width && header_width > column_width
+        column_width = formatted.map { |row|
+          row.map { |hl| MB::U.remove_ansi(hl).length + 2 }
+        }.transpose.map.with_index { |col, idx|
+          [col.max, header_width[idx] || 0].max
+        }
 
-        separator = (['-' * column_width] * columns).join('+')
+        column_width = [column_width.max] * column_width.length unless variable_width
+        total_width = column_width.sum + column_width.length - 1
 
-        if header
-          puts header.map.with_index { |k, idx| "\e[1;#{31 + idx % 7}m#{k.to_s.center(column_width)}\e[0m" }.join('|')
-          puts separator
+        output = []
+
+        if header.is_a?(String)
+          header_length = remove_ansi(header).length + 2
+
+          # FIXME: this is a slow algorithm design for growing the smallest columns first
+          while total_width < header_length
+            if variable_width
+              shortest_idx = column_width.each.with_index.min_by(&:first).last
+              column_width[shortest_idx] += 1
+              total_width += 1
+            else
+              column_width.map! { |c| c + 1 }
+              total_width += column_width.length
+            end
+          end
         end
 
-        formatted.each_with_index do |row, idx|
-          puts(
-            row.map { |hl|
-              colorless = MB::U.remove_ansi(hl)
-              len = colorless.length
-              extra = column_width - len
-              # TODO: align on the decimal point
-              # pre = extra / 2
-              pre = colorless.start_with?('-') ? 0 : 1
-              post = extra - pre
-              post = 0 if post < 0
-              "#{' ' * pre}#{hl}#{' ' * post}"
-            }.join('|')
-          )
-          puts separator if separate_rows && idx < formatted.length - 1
+        separator = column_width.map { |w| '-' * w }.join('+')
+
+        if header.is_a?(String)
+          output << center_ansi("\e[1m#{header}\e[0m", total_width)
+          output << separator
+        elsif header
+          output << header.map.with_index { |k, idx| "\e[1;#{31 + idx % 7}m#{center_ansi(k.to_s, column_width[idx])}\e[0m" }.join('|')
+          output << separator
         end
 
-        nil
+        formatted.each.with_index { |row, idx|
+          output << row.map.with_index { |hl, col|
+            colorless = MB::U.remove_ansi(hl)
+            len = colorless.length
+            extra = column_width[col] - len
+            # TODO: align numerics on the decimal point
+            pre = colorless.start_with?('-') ? 0 : 1
+            post = extra - pre
+            post = 0 if post < 0
+            "#{' ' * pre}#{hl}#{' ' * post}"
+          }.join('|')
+
+          if separate_rows && idx < formatted.length - 1
+            output << separator
+          end
+        }
+
+        if print
+          output.each do |s|
+            puts s
+          end
+          nil
+        else
+          output
+        end
       end
     end
   end
