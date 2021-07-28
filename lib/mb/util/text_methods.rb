@@ -131,7 +131,7 @@ module MB
 
         else
           header = (1..columns).map(&:to_s) if header.nil?
-          header = Array(header)
+          header = header.is_a?(Array) ? header.dup : Array(header)
           header[columns - 1] = nil if header.length < columns
           header = header.map(&:to_s)
           header_width = header.map { |h| MB::U.remove_ansi(h).length + 2 }
