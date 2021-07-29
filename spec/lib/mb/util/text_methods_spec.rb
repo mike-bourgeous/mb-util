@@ -107,7 +107,7 @@ RSpec.describe(MB::Util::TextMethods) do
       expect(MB::Util).to receive(:puts).with(/1.*\|.*2.*\|.*3.*\|.*4/)
       expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+/)
       expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333.*\|[^nil]*$/)
-      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17.*\|/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17.*\|.*0/)
       expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|[^nil|]*\|[^nil|]*$/)
       MB::U.table([
         [11, 22, 333],
@@ -129,6 +129,38 @@ RSpec.describe(MB::Util::TextMethods) do
           [7, 'z']
         ],
         header: ['q', 'r', 's', 't']
+      )
+    end
+
+    it 'can print a header with fewer columns than data' do
+      expect(MB::Util).to receive(:puts).with(/q.*\|.*r.*\|.*s.*\|.*/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333.*\|[^nil]*$/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17.*\|.*0/)
+      expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|[^nil|]*\|[^nil|]*$/)
+      MB::U.table(
+        [
+          [11, 22, 333],
+          [37, 27, 17, 0],
+          [7, 'z']
+        ],
+        header: ['q', 'r', 's']
+      )
+    end
+
+    it 'can print a header with more columns than data' do
+      expect(MB::Util).to receive(:puts).with(/q.*\|.*r.*\|.*s.*\|.*t.*\|.*u/)
+      expect(MB::Util).to receive(:puts).with(/-+\+-+\+-+\+-+\+-+/)
+      expect(MB::Util).to receive(:puts).with(/11.*\|.*22.*\|.*333.*\|[^nil]*\|\s*$/)
+      expect(MB::Util).to receive(:puts).with(/37.*\|.*27.*\|.*17.*\|.*0.*\|/)
+      expect(MB::Util).to receive(:puts).with(/7.*\|.*z.*\|[^nil|]*\|[^nil|]*\|[^nil|]*$/)
+      MB::U.table(
+        [
+          [11, 22, 333],
+          [37, 27, 17, 0],
+          [7, 'z']
+        ],
+        header: ['q', 'r', 's', 't', 'u']
       )
     end
 

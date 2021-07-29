@@ -118,6 +118,7 @@ module MB
         rows = Array(rows)
         rows = rows.map { |r| Array(r).dup }
         columns = rows.map(&:length).max
+        columns = header.length if header.is_a?(Array) && header.length > columns
         rows.each { |r| r[columns - 1] = nil if r.length < columns }
 
         case header
@@ -185,7 +186,10 @@ module MB
           output << center_ansi("\e[1m#{header}\e[0m", total_width)
           output << separator
         elsif header
-          output << header.map.with_index { |k, idx| "\e[1;#{31 + idx % 7}m#{center_ansi(k.to_s, column_width[idx])}\e[0m" }.join('|')
+          output << header.map.with_index { |k, idx|
+            width = column_width[idx] || header_width[idx] || 0
+            "\e[1;#{31 + idx % 7}m#{center_ansi(k.to_s, width)}\e[0m"
+          }.join('|')
           output << separator
         end
 
