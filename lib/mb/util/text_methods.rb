@@ -7,6 +7,14 @@ module MB
     # MB::Util extends itself with this module, so use these methods via
     # MB::Util.
     module TextMethods
+      # Raised by #color_trace if given the wrong type of argument.
+      class TraceArgumentError < ArgumentError
+        def initialize(msg = nil)
+          msg ||= 'Provide an Array from caller_locations/backtrace_locations or an Exception'
+          super(msg)
+        end
+      end
+
       # Wraps the given text for the current terminal width, or 80 columns if
       # the terminal width is unknown.  Returns the text unmodified if WordWrap
       # is unavailable.
@@ -43,14 +51,42 @@ module MB
       # using Pry's ColorPrinter.  If the ColorPrinter is not available,
       # CodeRay will be used, and failing that, the string will be bolded.
       def highlight(object, columns: nil)
-        require 'pry'
-        Pry::ColorPrinter.pp(object, '', columns || width)
+        if object.is_a?(Exception) || (object.is_a?(Array) && object[0].is_a?(Thread::Backtrace::Location))
+          color_trace(object)
+        else
+          require 'pry'
+          Pry::ColorPrinter.pp(object, '', columns || width)
+        end
       rescue LoadError
         Kernel.warn 'Failed to load Pry for pretty-printing'
         begin
           syntax(object.inspect)
         rescue LoadError
           "\e[1m#{object.inspect}\e[0m"
+        end
+      end
+
+      # Colorizes a backtrace from caller_locations, or an exception with its
+      # backtrace.  Used by #highlight, but may also be used directly.
+      def color_trace(trace)
+        case trace
+        when Array
+          raise TraceArgumentError unless trace.all?(Thread::Backtrace::Location)
+          home = Dir.home
+          trace.map { |t|
+            path, sep, name = t.path.rpartition('/')
+            path = path.sub(/^#{Regexp.escape(home)}/, '~')
+            "\e[38;5;240m#{path}#{sep}\e[36m#{name}\e[38;5;240m:\e[1;34m#{t.lineno}\e[0;38;5;240m:\e[33min `\e[1;35m#{t.label}\e[0;33m'\e[0m"
+          }.join("\n")
+
+        when Exception
+          "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{color_trace(trace.backtrace_locations).gsub("\n", "\n\t")}\n\e[0;31m>\e[0m"
+
+        when nil
+          '[no trace]'
+
+        else
+          raise TraceArgumentError
         end
       end
 

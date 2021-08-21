@@ -3,6 +3,52 @@ RSpec.describe(MB::Util::TextMethods) do
     it 'includes some ANSI colors when given a Hash' do
       expect(MB::Util.highlight({a: 1})).to match(/\e\[[^a-z]*m/)
     end
+
+    it 'calls color_trace for caller_locations' do
+      expect(MB::Util).to receive(:color_trace).and_return('test here')
+      text = MB::Util.highlight(caller_locations)
+      expect(text).to eq('test here')
+    end
+
+    it 'calls color_trace for exceptions' do
+      expect(MB::Util).to receive(:color_trace).and_return('test here')
+      text = MB::Util.highlight(RuntimeError.new)
+      expect(text).to eq('test here')
+    end
+  end
+
+  describe '#color_trace' do
+    it 'raises an error if given invalid types' do
+      expect { MB::U.color_trace(['invalid array']) }.to raise_error(MB::Util::TextMethods::TraceArgumentError)
+      expect { MB::U.color_trace('invalid arg') }.to raise_error(MB::Util::TextMethods::TraceArgumentError)
+    end
+
+    it 'formats caller locations' do
+      locations = caller_locations
+      expect(locations.length).to be > 2
+      expect(MB::U.color_trace(locations).lines.count).to eq(locations.length)
+      expect(MB::U.color_trace(locations)).to match(/\e\[0m/)
+    end
+
+    it 'formats exceptions with a backtrace' do
+      error = nil
+      begin
+        error = MB::U.color_trace('invalid')
+      rescue => e
+        error = e
+      end
+
+      text = MB::U.color_trace(error)
+      expect(text).to include('TraceArgumentError')
+      expect(text).to include('Provide')
+      expect(text.lines.count).to be > 2
+    end
+
+    it 'can format an exception without a backtrace' do
+      error = RuntimeError.new
+      expect(error.backtrace_locations).to be_nil
+      expect(MB::U.color_trace(error)).to include('no trace')
+    end
   end
 
   describe '#syntax' do
