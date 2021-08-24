@@ -80,10 +80,7 @@ module MB
           }.join("\n")
 
         when Exception
-          # Bypass did_you_mean; it runs very slowly in my use cases
-          msg = trace.respond_to?(:original_message) ? trace.original_message : trace.message
-
-          "\e[31m#<#{trace.class}: \e[1m#{msg}\e[22m:\n\t#{color_trace(trace.backtrace_locations).gsub("\n", "\n\t")}\n\e[0;31m>\e[0m"
+          "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{color_trace(trace.backtrace_locations).gsub("\n", "\n\t")}\n\e[0;31m>\e[0m"
 
         when nil
           '[no trace]'
