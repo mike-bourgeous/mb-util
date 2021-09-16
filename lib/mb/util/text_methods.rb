@@ -106,6 +106,21 @@ module MB
           .gsub(/[:,]+/, "\e[36m\\&\e[37m")
       end
 
+      # Prints (or returns if +:print+ is false) the given +text+, followed by
+      # a double underline composed of a string of +:underline+ of the same
+      # length, using the given ANSI/xterm +:color+.  If printing, an extra
+      # newline is printed before the text.
+      def headline(text, color: '1;33', underline: '=', print: true)
+        len = remove_ansi(text).length
+        str = "\e[#{color}m#{text}\n\e[#{color}m#{underline * len}\e[0m"
+
+        if print
+          puts "\n#{str}\n"
+        else
+          str
+        end
+      end
+
       # Prints the given +data+ (either a Hash mapping column names to Arrays,
       # or an Array of Arrays of data) in a tabular layout with color
       # highlighting.

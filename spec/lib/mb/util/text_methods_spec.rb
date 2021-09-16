@@ -86,6 +86,23 @@ RSpec.describe(MB::Util::TextMethods) do
     end
   end
 
+  describe '#headline' do
+    it 'generates the correct length without ANSI sequences' do
+      result = MB::U.headline('yo yo', underline: '-', print: false)
+      expect(result).to eq("\e[1;33myo yo\n\e[1;33m-----\e[0m")
+    end
+
+    it 'generates the correct length with ANSI sequences' do
+      result = MB::U.headline("\e[1;35mHeyo\e[0;36m there\e[0m", color: 35, print: false)
+      expect(result).to eq("\e[35m\e[1;35mHeyo\e[0;36m there\e[0m\n\e[35m==========\e[0m")
+    end
+
+    it 'prefixes with another newline when printing' do
+      expect(MB::Util).to receive(:puts).with("\n\e[1;33mHey\n\e[1;33m^^^\e[0m\n")
+      MB::U.headline('Hey', underline: '^')
+    end
+  end
+
   describe '#table' do
     it 'can use a short String as the header' do
       expect(MB::Util).to receive(:puts).with("   \e[1mTest\e[0m    ")
