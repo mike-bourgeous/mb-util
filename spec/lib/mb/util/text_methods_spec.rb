@@ -1,3 +1,5 @@
+require 'timeout'
+
 RSpec.describe(MB::Util::TextMethods) do
   describe '#highlight' do
     it 'includes some ANSI colors when given a Hash' do
@@ -104,6 +106,30 @@ RSpec.describe(MB::Util::TextMethods) do
   end
 
   describe '#table' do
+    context 'with empty inputs' do
+      it 'does not loop forever if given an empty Array' do
+        expect {
+          Timeout.timeout(5) do
+            MB::U.table([])
+          end
+        }.not_to raise_error
+      end
+
+      it 'does not loop forever if given an empty Hash' do
+        expect {
+          Timeout.timeout(5) do
+            MB::U.table({})
+          end
+        }.not_to raise_error
+      end
+
+      it 'can display a Hash with empty columns' do
+        expect(MB::Util).to receive(:puts).with(/[^ |]* [^ |]*1[^ |]* [^ |*]/)
+        expect(MB::Util).to receive(:puts).with(/---/)
+        MB::U.table({1 => []})
+      end
+    end
+
     it 'can use a short String as the header' do
       expect(MB::Util).to receive(:puts).with("   \e[1mTest\e[0m    ")
       expect(MB::Util).to receive(:puts).with('---+---+---')
