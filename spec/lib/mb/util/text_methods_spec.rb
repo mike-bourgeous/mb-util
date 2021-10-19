@@ -108,6 +108,9 @@ RSpec.describe(MB::Util::TextMethods) do
   describe '#table' do
     context 'with empty inputs' do
       it 'does not loop forever if given an empty Array' do
+        expect(MB::U).to receive(:puts).with('')
+        expect(MB::U).to receive(:puts).with('')
+
         expect {
           Timeout.timeout(5) do
             MB::U.table([])
@@ -116,6 +119,9 @@ RSpec.describe(MB::Util::TextMethods) do
       end
 
       it 'does not loop forever if given an empty Hash' do
+        expect(MB::U).to receive(:puts).with('')
+        expect(MB::U).to receive(:puts).with('')
+
         expect {
           Timeout.timeout(5) do
             MB::U.table({})
@@ -125,7 +131,7 @@ RSpec.describe(MB::Util::TextMethods) do
 
       it 'can display a Hash with empty columns' do
         expect(MB::Util).to receive(:puts).with(/[^ |]* [^ |]*1[^ |]* [^ |*]/)
-        expect(MB::Util).to receive(:puts).with(/---/)
+        expect(MB::Util).to receive(:puts).with('---')
         MB::U.table({1 => []})
       end
     end
