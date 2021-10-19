@@ -168,7 +168,7 @@ module MB
 
         rows = Array(rows)
         rows = rows.map { |r| Array(r).dup }
-        columns = rows.map(&:length).max
+        columns = rows.map(&:length).max || 0
         columns = header.length if header.is_a?(Array) && header.length > columns
         rows.each { |r| r[columns - 1] = nil if r.length < columns }
 
@@ -204,11 +204,15 @@ module MB
           }
         }
 
-        column_width = formatted.map { |row|
-          row.map { |hl| MB::U.remove_ansi(hl).length + 2 }
-        }.transpose.map.with_index { |col, idx|
-          [col.max, header_width[idx] || 0].max
-        }
+        if formatted.empty?
+          column_width = header_width.dup
+        else
+          column_width = formatted.map { |row|
+            row.map { |hl| MB::U.remove_ansi(hl).length + 2 }
+          }.transpose.map.with_index { |col, idx|
+            [col.max, header_width[idx] || 0].max
+          }
+        end
 
         column_width = [column_width.max] * column_width.length unless variable_width
         total_width = column_width.sum + column_width.length - 1
