@@ -144,7 +144,8 @@ module MB
       #
       # If +:variable_width+ is true (the default is false), then each column
       # may have a different width.  If false, then all columns will be the
-      # same width.
+      # same width.  If +:variable_width+ is an Array of Integers, then those
+      # values will be used as minimum sizes for columns.
       #
       # If +:print+ is true (the default), then the table will be printed to
       # STDOUT.  If false, then the formatted rows of the table will be
@@ -208,9 +209,10 @@ module MB
           column_width = header_width.dup
         else
           column_width = formatted.map { |row|
-            row.map { |hl| MB::U.remove_ansi(hl).length + 2 }
+            row.map { |hl| MB::U.remove_ansi(hl).length }
           }.transpose.map.with_index { |col, idx|
-            [col.max, header_width[idx] || 0].max
+            vw = variable_width[idx] if variable_width.is_a?(Array)
+            [(vw || 0) + 2, col.max + 2, header_width[idx] || 0].max
           }
         end
 
