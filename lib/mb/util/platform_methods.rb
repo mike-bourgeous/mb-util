@@ -20,7 +20,8 @@ module MB
       # Returns the actual size set by the kernel on success.
       #
       # Raises SystemCallError, Errno::EPERM (if the size is larger than the
-      # fs.pipe-max-size sysctl), or possibly IOError on failure.
+      # fs.pipe-max-size sysctl), or possibly IOError on failure.  Or may
+      # return -1 on error, e.g. on TruffleRuby.
       def pipe_size(io, size)
         if RUBY_PLATFORM =~ /linux/
           @max_pipe ||= max_pipe_size
