@@ -17,6 +17,12 @@ RSpec.describe(MB::Util::TextMethods) do
       text = MB::Util.highlight(RuntimeError.new)
       expect(text).to eq('test here')
     end
+
+    it 'does not end with a newline when given lots of data' do
+      result = MB::Util.highlight((1..1000).to_a)
+      expect(result).to include("\n")
+      expect(result).not_to end_with("\n")
+    end
   end
 
   describe '#color_trace' do

@@ -55,7 +55,7 @@ module MB
           color_trace(object)
         else
           require 'pry'
-          Pry::ColorPrinter.pp(object, '', columns || width)
+          Pry::ColorPrinter.pp(object, '', columns || width).strip!
         end
       rescue LoadError
         Kernel.warn 'Failed to load Pry for pretty-printing'
