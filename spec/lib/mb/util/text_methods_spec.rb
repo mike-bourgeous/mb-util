@@ -21,8 +21,18 @@ RSpec.describe(MB::Util::TextMethods) do
 
   describe '#color_trace' do
     it 'raises an error if given invalid types' do
-      expect { MB::U.color_trace(['invalid array']) }.to raise_error(MB::Util::TextMethods::TraceArgumentError)
+      expect { MB::U.color_trace([:invalid_array]) }.to raise_error(MB::Util::TextMethods::TraceArgumentError)
       expect { MB::U.color_trace('invalid arg') }.to raise_error(MB::Util::TextMethods::TraceArgumentError)
+    end
+
+    it 'formats arrays of strings' do
+      trace = [
+        "/foo/bar/baz/blah.rb:12345:in `location'",
+        "(pry):0:in `there'",
+      ]
+      result = MB::U.color_trace(trace)
+      expect(result).to include("\e[0m")
+      expect(MB::U.remove_ansi(result)).to eq(trace.join("\n"))
     end
 
     it 'formats caller locations' do

@@ -68,19 +68,47 @@ module MB
 
       # Colorizes a backtrace from caller_locations, or an exception with its
       # backtrace.  Used by #highlight, but may also be used directly.
+      #
+      # Will also colorize an Array of Strings from #caller or Exception's
+      # #backtrace, but this is more brittle and will probably only work if the
+      # language is set to English.
       def color_trace(trace)
         case trace
         when Array
-          raise TraceArgumentError unless trace.all?(Thread::Backtrace::Location)
+          unless trace.all? { |t| t.is_a?(Thread::Backtrace::Location) || t.is_a?(String) }
+            raise TraceArgumentError
+          end
+
           home = Dir.home
+
           trace.map { |t|
-            path, sep, name = t.path.rpartition('/')
+            case t
+            when Thread::Backtrace::Location
+              fullpath = t.path
+              line = t.lineno
+              label = t.label
+
+            when /^(?<fullpath>.*):(?<line>[0-9]*):in `(?<label>.*)'.*$/
+              fullpath = $1
+              line = $2
+              label = $3
+
+            when String
+              fullpath, line, label = t.split(':', 3)
+
+            else
+              raise TraceArgumentError
+            end
+
+            path, sep, name = fullpath.rpartition('/')
             path = path.sub(/^#{Regexp.escape(home)}/, '~')
-            "\e[38;5;240m#{path}#{sep}\e[36m#{name}\e[38;5;240m:\e[1;34m#{t.lineno}\e[0;38;5;240m:\e[33min `\e[1;35m#{t.label}\e[0;33m'\e[0m"
+
+            "\e[38;5;240m#{path}#{sep}\e[36m#{name}\e[38;5;240m:\e[1;34m#{line}\e[0;38;5;240m:\e[33min `\e[1;35m#{label}\e[0;33m'\e[0m"
           }.join("\n")
 
         when Exception
-          "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{color_trace(trace.backtrace_locations).gsub("\n", "\n\t")}\n\e[0;31m>\e[0m"
+          bt = color_trace(trace.backtrace_locations || trace.backtrace).gsub("\n", "\n\t")
+          "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{bt}\n\e[0;31m>\e[0m"
 
         when nil
           '[no trace]'
