@@ -72,7 +72,10 @@ module MB
       # Will also colorize an Array of Strings from #caller or Exception's
       # #backtrace, but this is more brittle and will probably only work if the
       # language is set to English.
-      def color_trace(trace)
+      #
+      # The +:exclude+ parameter may be a regular expression.  Any backtrace
+      # element that matches the regular epxression will be excluded.
+      def color_trace(trace, exclude: nil)
         case trace
         when Array
           unless trace.all? { |t| t.is_a?(Thread::Backtrace::Location) || t.is_a?(String) }
@@ -81,6 +84,7 @@ module MB
 
           home = Dir.home
 
+          trace = trace.reject { |t| t.to_s =~ exclude } if exclude
           trace.map { |t|
             case t
             when Thread::Backtrace::Location

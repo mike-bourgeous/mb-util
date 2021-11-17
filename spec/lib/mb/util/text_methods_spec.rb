@@ -38,6 +38,7 @@ RSpec.describe(MB::Util::TextMethods) do
       ]
       result = MB::U.color_trace(trace)
       expect(result).to include("\e[0m")
+      expect(result.lines.length).to eq(2)
       expect(MB::U.remove_ansi(result)).to eq(trace.join("\n"))
     end
 
@@ -46,6 +47,17 @@ RSpec.describe(MB::Util::TextMethods) do
       expect(locations.length).to be > 2
       expect(MB::U.color_trace(locations).lines.count).to eq(locations.length)
       expect(MB::U.color_trace(locations)).to match(/\e\[0m/)
+    end
+
+    it 'allows filtering backtrace entries' do
+      trace = [
+        "/foo/bar/baz/blah.rb:12345:in `location'",
+        "/foo/bar/lib/pry-blah/blah.rb:12345:in `pry-location'",
+        "(pry):0:in `there'",
+      ]
+      filter = %r{(\(pry\)|/lib/pry)}
+      expect(MB::U.color_trace(trace).lines.count).to eq(3)
+      expect(MB::U.color_trace(trace, exclude: filter).lines.count).to eq(1)
     end
 
     it 'formats exceptions with a backtrace' do
