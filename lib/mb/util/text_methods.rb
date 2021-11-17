@@ -111,7 +111,7 @@ module MB
           }.join("\n")
 
         when Exception
-          bt = color_trace(trace.backtrace_locations || trace.backtrace).gsub("\n", "\n\t")
+          bt = color_trace(trace.backtrace_locations || trace.backtrace, exclude: exclude).gsub("\n", "\n\t")
           "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{bt}\n\e[0;31m>\e[0m"
 
         when nil
