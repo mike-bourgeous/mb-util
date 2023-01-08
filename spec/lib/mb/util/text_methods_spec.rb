@@ -354,4 +354,34 @@ RSpec.describe(MB::Util::TextMethods) do
       MB::U.table([["abc\a", 'def']], header: false)
     end
   end
+
+  describe '#rgb' do
+    it 'can generate all black' do
+      expect(MB::U.rgb(0, 0, 0)).to eq("\e[38;2;0;0;0m")
+    end
+
+    it 'can generate all red' do
+      expect(MB::U.rgb(255, 0, 0)).to eq("\e[38;2;255;0;0m")
+    end
+
+    it 'can generate all green' do
+      expect(MB::U.rgb(0, 255, 0)).to eq("\e[38;2;0;255;0m")
+    end
+
+    it 'can generate all blue' do
+      expect(MB::U.rgb(0, 0, 255)).to eq("\e[38;2;0;0;255m")
+    end
+
+    it 'can generate gray' do
+      expect(MB::U.rgb(128, 128, 128)).to eq("\e[38;2;128;128;128m")
+    end
+
+    it 'clamps to 0..255' do
+      expect(MB::U.rgb(-35, 500, 192)).to eq("\e[38;2;0;255;192m")
+    end
+
+    it 'rounds values' do
+      expect(MB::U.rgb(50.5, 13.2, Math::PI)).to eq("\e[38;2;51;13;3m")
+    end
+  end
 end

@@ -26,6 +26,22 @@ module MB
         text
       end
 
+      # Returns a terminal escape sequence to produce a 24-bit color for the
+      # given RGB integer values from 0..255.
+      def rgb(r, g, b)
+        r = r.round
+        g = g.round
+        b = b.round
+        r = 0 if r < 0
+        r = 255 if r > 255
+        g = 0 if g < 0
+        g = 255 if g > 255
+        b = 0 if b < 0
+        b = 255 if b > 255
+
+        "\e[38;2;#{r};#{g};#{b}m"
+      end
+
       # Returns a copy of the String with ANSI-style escape sequences removed.
       def remove_ansi(str)
         str.gsub(/\e\[[^A-Za-z~]*[A-Za-z~]/, '')
