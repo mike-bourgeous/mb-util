@@ -31,8 +31,8 @@ module MB
       # from 0..255.  If r == g == b, then one of the 24 grays at the end of
       # the 256-color palette may be used instead.
       #
-      # If +:background+ is true, then generates a background color (48;2;...)
-      # instead of a foreground color (38;2;...).
+      # If +:background+ is true, then generates a background color (48;5;...)
+      # instead of a foreground color (38;5;...).
       def rgb256(r, g, b, background: false)
         # TODO: Maybe use a closest-match palette lookup algorithm instead of hard-coding a special behavior for r==g==b
 
@@ -75,6 +75,20 @@ module MB
         b = 255 if b > 255
 
         "#{rgb256(r, g, b, background: background) if fallback}\e[#{background ? 48 : 38};2;#{r};#{g};#{b}m"
+      end
+
+      # Returns a terminal escape sequence for the given HSV color.  H, S, and
+      # V are floats in the range 0..1.
+      #
+      # if +:fallback+ is true, then the RGB color sequence is prefixed by a
+      # fallback from the xterm-256color palette.
+      #
+      # If +:background+ is true, then generates a background color (48;2;...)
+      # instead of a foreground color (38;2;...).
+      def hsv(h, s, v, fallback: false, background: false)
+        r, g, b = hsv_to_rgb(h, s, v)
+
+        rgb(r * 255, g * 255, b * 255, fallback: fallback, background: background)
       end
 
       # Returns a copy of the String with ANSI-style escape sequences removed.
@@ -380,12 +394,51 @@ module MB
         when v < 195
           3 # 175
 
-        when v < 235 # 215
-          4
+        when v < 235
+          4 # 215
 
-        else # 255
-          5
+        else
+          5 # 255
         end
+      end
+
+      # Converts HSV in the range 0..1 to RGB in the range 0..1.  Alpha is
+      # returned unmodified if present, omitted if nil.
+      #
+      # Borrowed from mb-geometry (removed alpha channel and GC-free support):
+      # https://github.com/mike-bourgeous/mb-geometry/blob/5e18eb910c182b99755b852f133f0b8579372884/lib/mb/geometry/voronoi/svg.rb#L6-L50
+      def hsv_to_rgb(h, s, v)
+        # https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
+
+        h = h.to_f
+        s = s.to_f
+        v = v.to_f
+
+        h = 0 if h.nan?
+        h = 0 if h < 0 && h.infinite?
+        h = 1 if h > 1 && h.infinite?
+        h = h % 1 if h < 0 || h > 1
+        c = v.to_f * s.to_f
+        h *= 6.0
+        x = c.to_f * (1 - ((h % 2) - 1).abs)
+        case h.floor
+        when 0
+          r, g, b = c, x, 0
+        when 1
+          r, g, b = x, c, 0
+        when 2
+          r, g, b = 0, c, x
+        when 3
+          r, g, b = 0, x, c
+        when 4
+          r, g, b = x, 0, c
+        else
+          r, g, b = c, 0, x
+        end
+
+        m = v - c
+
+        return r + m, g + m, b + m
       end
     end
   end

@@ -424,4 +424,46 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
       expect(MB::U.rgb256(255, 255, 0, background: true)).to eq("\e[48;5;226m")
     end
   end
+
+  describe '#hsv' do
+    it 'returns RGB black when value is zero, regardless of hue or saturation' do
+      expect(MB::U.hsv(0.5, 0, 0)).to eq("\e[38;2;0;0;0m")
+      expect(MB::U.hsv(0.5, 0.5, 0, fallback: true)).to eq("\e[38;5;16m\e[38;2;0;0;0m")
+
+      expect(MB::U.hsv(0.7, 0.2, 0, background: true)).to eq("\e[48;2;0;0;0m")
+      expect(MB::U.hsv(0.3, 1.0, 0, fallback: true, background: true)).to eq("\e[48;5;16m\e[48;2;0;0;0m")
+    end
+
+    it 'returns expected RGBCMY fully saturated colors' do
+      expect(MB::U.hsv(0.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;196m\e[38;2;255;0;0m")
+      expect(MB::U.hsv(1.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;226m\e[38;2;255;255;0m")
+      expect(MB::U.hsv(2.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;46m\e[38;2;0;255;0m")
+      expect(MB::U.hsv(3.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;51m\e[38;2;0;255;255m")
+      expect(MB::U.hsv(4.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;21m\e[38;2;0;0;255m")
+      expect(MB::U.hsv(5.0 / 6.0, 1, 1, fallback: true)).to eq("\e[38;5;201m\e[38;2;255;0;255m")
+
+      expect(MB::U.hsv(0.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;196m\e[48;2;255;0;0m")
+      expect(MB::U.hsv(1.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;226m\e[48;2;255;255;0m")
+      expect(MB::U.hsv(2.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;46m\e[48;2;0;255;0m")
+      expect(MB::U.hsv(3.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;51m\e[48;2;0;255;255m")
+      expect(MB::U.hsv(4.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;21m\e[48;2;0;0;255m")
+      expect(MB::U.hsv(5.0 / 6.0, 1, 1, fallback: true, background: true)).to eq("\e[48;5;201m\e[48;2;255;0;255m")
+    end
+
+    it 'returns expected RGBCMY half saturated colors' do
+      expect(MB::U.hsv(0.0 / 6.0, 0.5, 1)).to eq("\e[38;2;255;128;128m")
+      expect(MB::U.hsv(1.0 / 6.0, 0.5, 1)).to eq("\e[38;2;255;255;128m")
+      expect(MB::U.hsv(2.0 / 6.0, 0.5, 1)).to eq("\e[38;2;128;255;128m")
+      expect(MB::U.hsv(3.0 / 6.0, 0.5, 1)).to eq("\e[38;2;128;255;255m")
+      expect(MB::U.hsv(4.0 / 6.0, 0.5, 1)).to eq("\e[38;2;128;128;255m")
+      expect(MB::U.hsv(5.0 / 6.0, 0.5, 1)).to eq("\e[38;2;255;128;255m")
+
+      expect(MB::U.hsv(0.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;255;128;128m")
+      expect(MB::U.hsv(1.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;255;255;128m")
+      expect(MB::U.hsv(2.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;128;255;128m")
+      expect(MB::U.hsv(3.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;128;255;255m")
+      expect(MB::U.hsv(4.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;128;128;255m")
+      expect(MB::U.hsv(5.0 / 6.0, 0.5, 1, background: true)).to eq("\e[48;2;255;128;255m")
+    end
+  end
 end
