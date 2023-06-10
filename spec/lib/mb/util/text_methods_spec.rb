@@ -1,6 +1,6 @@
 require 'timeout'
 
-RSpec.describe(MB::Util::TextMethods) do
+RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
   describe '#highlight' do
     it 'includes some ANSI colors when given a Hash' do
       expect(MB::Util.highlight({a: 1})).to match(/\e\[[^a-z]*m/)
@@ -382,6 +382,46 @@ RSpec.describe(MB::Util::TextMethods) do
 
     it 'rounds values' do
       expect(MB::U.rgb(50.5, 13.2, Math::PI)).to eq("\e[38;2;51;13;3m")
+    end
+
+    it 'can generate background colors' do
+      expect(MB::U.rgb(30, 40, 50, background: true)).to eq("\e[48;2;30;40;50m")
+    end
+
+    it 'can include a fallback from the 256-color palette' do
+      expect(MB::U.rgb(95, 215, 135, fallback: true)).to eq("\e[38;5;78m\e[38;2;95;215;135m")
+      expect(MB::U.rgb(95, 215, 135, background: true, fallback: true)).to eq("\e[48;5;78m\e[48;2;95;215;135m")
+    end
+  end
+
+  describe '#rgb256' do
+    it 'returns RGB black for values close to 0, 0, 0' do
+      expect(MB::U.rgb256(0, 0, 0)).to eq("\e[38;5;16m")
+      expect(MB::U.rgb256(0, 3, 3)).to eq("\e[38;5;16m")
+      expect(MB::U.rgb256(3, 3, 3)).to eq("\e[38;5;16m")
+    end
+
+    it 'returns RGB white for values close to 255, 255, 255' do
+      expect(MB::U.rgb256(247, 247, 247)).to eq("\e[38;5;231m")
+      expect(MB::U.rgb256(253, 255, 247)).to eq("\e[38;5;231m")
+      expect(MB::U.rgb256(255, 255, 255)).to eq("\e[38;5;231m")
+    end
+
+    it 'returns expected index for RGBCMY saturated colors' do
+      expect(MB::U.rgb256(255, 0, 0)).to eq("\e[38;5;196m")
+      expect(MB::U.rgb256(255, 255, 0)).to eq("\e[38;5;226m")
+      expect(MB::U.rgb256(0, 255, 0)).to eq("\e[38;5;46m")
+      expect(MB::U.rgb256(0, 255, 255)).to eq("\e[38;5;51m")
+      expect(MB::U.rgb256(0, 0, 255)).to eq("\e[38;5;21m")
+      expect(MB::U.rgb256(255, 0, 255)).to eq("\e[38;5;201m")
+    end
+
+    it 'can generate background grays' do
+      expect(MB::U.rgb256(88, 88, 88, background: true)).to eq("\e[48;5;240m")
+    end
+
+    it 'can generate background colors' do
+      expect(MB::U.rgb256(255, 255, 0, background: true)).to eq("\e[48;5;226m")
     end
   end
 end

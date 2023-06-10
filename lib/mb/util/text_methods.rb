@@ -26,9 +26,44 @@ module MB
         text
       end
 
+      # Returns a terminal escape sequence to produce an approximate RGB color
+      # from the xterm-256color 6x6x6 RGB cube for the given RGB integer values
+      # from 0..255.  If r == g == b, then one of the 24 grays at the end of
+      # the 256-color palette may be used instead.
+      #
+      # If +:background+ is true, then generates a background color (48;2;...)
+      # instead of a foreground color (38;2;...).
+      def rgb256(r, g, b, background: false)
+        # TODO: Maybe use a closest-match palette lookup algorithm instead of hard-coding a special behavior for r==g==b
+
+        # 246.5 is 0.5 * (0xee + 0xff) (xterm grays increment by 10 from 8 and top out at 238 / 0xee)
+        # Reference used: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+        if r == g && g == b && r >= 4 && r <= 246.5
+          gray = ((r - 8) / 10).round
+          gray = 0 if gray < 0
+          gray = 23 if gray > 23
+
+          index = 232 + gray
+        else
+          r = xterm256_lookup(r)
+          g = xterm256_lookup(g)
+          b = xterm256_lookup(b)
+
+          index = 16 + r * 36 + g * 6 + b
+        end
+
+        "\e[#{background ? 48 : 38};5;#{index}m"
+      end
+
       # Returns a terminal escape sequence to produce a 24-bit color for the
       # given RGB integer values from 0..255.
-      def rgb(r, g, b)
+      #
+      # if +:fallback+ is true, then the RGB color sequence is prefixed by a
+      # fallback from the xterm-256color palette.
+      #
+      # If +:background+ is true, then generates a background color (48;2;...)
+      # instead of a foreground color (38;2;...).
+      def rgb(r, g, b, fallback: false, background: false)
         r = r.round
         g = g.round
         b = b.round
@@ -39,7 +74,7 @@ module MB
         b = 0 if b < 0
         b = 255 if b > 255
 
-        "\e[38;2;#{r};#{g};#{b}m"
+        "#{rgb256(r, g, b, background: background) if fallback}\e[#{background ? 48 : 38};2;#{r};#{g};#{b}m"
       end
 
       # Returns a copy of the String with ANSI-style escape sequences removed.
@@ -322,6 +357,34 @@ module MB
           nil
         else
           output
+        end
+      end
+
+      private
+
+      # The xterm-256color RGB cube does not use a linear scale from sRGB
+      # values in 0..255.  This function uses a lookup table to convert from
+      # the 0..255 RGB range to the 0..5 xterm-256color range.
+      def xterm256_lookup(v)
+        # Reference used: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+        case
+        when v < 47.5
+          0 # 0
+
+        when v < 115
+          1 # 95
+
+        when v < 155
+          2 # 135
+
+        when v < 195
+          3 # 175
+
+        when v < 235 # 215
+          4
+
+        else # 255
+          5
         end
       end
     end
