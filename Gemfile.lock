@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mb-util (0.1.16.usegit)
+    mb-util (0.1.17.usegit)
 
 GEM
   remote: https://rubygems.org/

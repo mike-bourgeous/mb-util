@@ -130,17 +130,22 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
   describe '#headline' do
     it 'generates the correct length without ANSI sequences' do
       result = MB::U.headline('yo yo', underline: '-', print: false)
-      expect(result).to eq("\e[1;33myo yo\n\e[1;33m-----\e[0m")
+      expect(result).to eq("\e[1;33myo yo\e[0m\n\e[1;33m-----\e[0m")
     end
 
     it 'generates the correct length with ANSI sequences' do
       result = MB::U.headline("\e[1;35mHeyo\e[0;36m there\e[0m", color: 35, print: false)
-      expect(result).to eq("\e[35m\e[1;35mHeyo\e[0;36m there\e[0m\n\e[35m==========\e[0m")
+      expect(result).to eq("\e[35m\e[1;35mHeyo\e[0;36m there\e[0m\e[0m\n\e[35m==========\e[0m")
     end
 
     it 'prefixes with another newline when printing' do
-      expect(MB::Util).to receive(:puts).with("\n\e[1;33mHey\n\e[1;33m^^^\e[0m\n")
+      expect(MB::Util).to receive(:puts).with("\n\e[1;33mHey\e[0m\n\e[1;33m^^^\e[0m\n")
       MB::U.headline('Hey', underline: '^')
+    end
+
+    it 'can prefix both lines with another string' do
+      result = MB::U.headline('Hello', prefix: '  --  ', print: false)
+      expect(result).to eq("  --  \e[1;33mHello\e[0m\n  --  \e[1;33m=====\e[0m")
     end
   end
 

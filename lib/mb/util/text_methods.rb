@@ -205,11 +205,12 @@ module MB
 
       # Prints (or returns if +:print+ is false) the given +text+, followed by
       # a double underline composed of a string of +:underline+ of the same
-      # length, using the given ANSI/xterm +:color+.  If printing, an extra
-      # newline is printed before the text.
-      def headline(text, color: '1;33', underline: '=', print: true)
+      # length, using the given ANSI/xterm +:color+.  The +:prefix+ string, if
+      # present, will be prepended to both lines of the headline, without
+      # color.  If printing, an extra newline is printed before the text.
+      def headline(text, color: '1;33', underline: '=', print: true, prefix: nil)
         len = remove_ansi(text).length
-        str = "\e[#{color}m#{text}\n\e[#{color}m#{underline * len}\e[0m"
+        str = "#{prefix}\e[#{color}m#{text}\e[0m\n#{prefix}\e[#{color}m#{underline * len}\e[0m"
 
         if print
           puts "\n#{str}\n"
