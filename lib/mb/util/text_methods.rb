@@ -242,8 +242,9 @@ module MB
       #
       # If +:variable_width+ is true (the default is false), then each column
       # may have a different width.  If false, then all columns will be the
-      # same width.  If +:variable_width+ is an Array of Integers, then those
-      # values will be used as minimum sizes for columns.
+      # same width.  If +:variable_width+ is an Integer, then that value will
+      # be used as the size for columns.  If +:variable_width+ is an Array of
+      # Integers, then those values will be used as minimum sizes for columns.
       #
       # If +:print+ is true (the default), then the table will be printed to
       # STDOUT.  If false, then the formatted rows of the table will be
@@ -303,6 +304,8 @@ module MB
           }
         }
 
+        variable_width = [variable_width] * columns if variable_width.is_a?(Integer) && variable_width > 0
+
         if formatted.empty?
           column_width = header_width.dup
         else
@@ -354,6 +357,7 @@ module MB
             len = colorless.length
             extra = column_width[col] - len
             # TODO: align numerics on the decimal point
+            # TODO: maybe allow specifying right-aligned or center-aligned
             pre = colorless.start_with?('-') ? 0 : 1
             post = extra - pre
             post = 0 if post < 0

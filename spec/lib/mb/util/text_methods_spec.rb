@@ -215,7 +215,19 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
       MB::U.table([['a', 'b2', 'cdefgh', 'i']], variable_width: true)
     end
 
-    it 'can specify the width of columns' do
+    it 'can specify a fixed width for all columns' do
+      v = MB::U.table([[1, 2, 3], [6, 5, 4]], header: ['a', 'b', 'c'], variable_width: 5, print: false)
+      v.map! { |s| MB::Util.remove_ansi(s) }
+
+      expect(v).to eq([
+        '   a   |   b   |   c   ',
+        '-------+-------+-------',
+        ' 1     | 2     | 3     ',
+        ' 6     | 5     | 4     ',
+      ])
+    end
+
+    it 'can specify the width of individual columns' do
       v = MB::U.table([[1, 2, 3], [6, 5, 4]], header: ['a', 'b', 'c'], variable_width: [5, 1, 3], print: false)
       v.map! { |s| MB::Util.remove_ansi(s) }
 
