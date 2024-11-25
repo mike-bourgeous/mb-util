@@ -73,6 +73,21 @@ The data is printed to the terminal (but with colors not visible here):
  3 | 6
 ```
 
+You can use Unicode box-drawing characters instead if you like (see the method
+documentation for all the options):
+
+```ruby
+MB::U.table(data, unicode: true)
+```
+
+```
+ a │ b
+───┼───
+ 1 │ 4
+ 2 │ 5
+ 3 │ 6
+```
+
 ## Installation and usage
 
 This project can be experimented with by cloning the Git repo, or you can use

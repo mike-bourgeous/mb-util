@@ -239,6 +239,18 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
       ])
     end
 
+    it 'can use Unicode box drawing characters' do
+      v = MB::U.table([[1, 2, 3], [6, 5, 4]], header: ['a', 'b', 'c'], variable_width: [5, 1, 3], print: false, unicode: true)
+      v.map! { |s| MB::Util.remove_ansi(s) }
+
+      expect(v).to eq([
+        '   a   │ b │  c  ',
+        '───────┼───┼─────',
+        ' 1     │ 2 │ 3   ',
+        ' 6     │ 5 │ 4   ',
+      ])
+    end
+
     it 'can return the formatted lines of text' do
       expect(MB::Util).not_to receive(:puts)
       rows = MB::U.table([['a', 'b2', 'cdefgh', 'i']], variable_width: true, print: false)

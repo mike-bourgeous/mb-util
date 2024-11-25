@@ -249,7 +249,20 @@ module MB
       # If +:print+ is true (the default), then the table will be printed to
       # STDOUT.  If false, then the formatted rows of the table will be
       # returned as an Array of Strings.
-      def table(data, header: nil, show_nil: false, separate_rows: false, raw_strings: true, variable_width: false, print: true)
+      #
+      # If +:unicode+ is true, then Unicode box drawing characters are used
+      # instead of ASCII to draw the table borders.
+      def table(data, header: nil, show_nil: false, separate_rows: false, raw_strings: true, variable_width: false, print: true, unicode: false)
+        if unicode
+          vertical = "\u2502"
+          horizontal = "\u2500"
+          intersection = "\u253c"
+        else
+          vertical = '|'
+          horizontal = '-'
+          intersection = '+'
+        end
+
         if data.is_a?(Hash)
           header = data.keys if header.nil?
           rows = data.values.map { |v| Array(v) }
@@ -338,7 +351,7 @@ module MB
           end
         end
 
-        separator = column_width.map { |w| '-' * w }.join('+')
+        separator = column_width.map { |w| horizontal * w }.join(intersection)
 
         if header.is_a?(String)
           output << center_ansi("\e[1m#{header}\e[0m", total_width)
@@ -347,7 +360,7 @@ module MB
           output << header.map.with_index { |k, idx|
             width = column_width[idx] || header_width[idx] || 0
             "\e[1;#{31 + idx % 7}m#{center_ansi(k.to_s, width)}\e[0m"
-          }.join('|')
+          }.join(vertical)
           output << separator
         end
 
@@ -362,7 +375,7 @@ module MB
             post = extra - pre
             post = 0 if post < 0
             "#{' ' * pre}#{hl}#{' ' * post}"
-          }.join('|')
+          }.join(vertical)
 
           if separate_rows && idx < formatted.length - 1
             output << separator
