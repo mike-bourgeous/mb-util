@@ -4,6 +4,7 @@ require_relative 'util/console_methods'
 require_relative 'util/text_methods'
 require_relative 'util/platform_methods'
 require_relative 'util/file_methods'
+require_relative 'util/debug_methods'
 
 module MB
   # General purpose utility functions, e.g. for dealing with the display.
@@ -15,6 +16,7 @@ module MB
     extend TextMethods
     extend PlatformMethods
     extend FileMethods
+    extend DebugMethods
   end
 
   # MB::U is a convenient shorthand for MB::Util.

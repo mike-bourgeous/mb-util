@@ -88,6 +88,49 @@ MB::U.table(data, unicode: true)
  3 │ 6
 ```
 
+### Debugging a running process
+
+Sometimes you want to know what an application is doing without interrupting
+it.  This might even be a production web app running on a remote server where
+options for debugging are limited.  You can use `sigquit_backtrace` to install
+a signal handler that will print a trace for all threads if you send SIGQUIT to
+your application.
+
+In your application:
+
+```ruby
+# In your app's startup
+MB::U.sigquit_backtrace
+
+# Note: the output is a little more useful if you give your threads names
+Thread.current.name = 'Main thread'
+```
+
+To generate a trace:
+
+```bash
+# From a terminal
+kill -QUIT [your_app_pid]
+
+# Or, press Ctrl-\ in the terminal where your app is running
+```
+
+And see the output (note that the output has colors not visible here):
+
+```
+Thread #<Thread:0x0000559e391bed88 run> (current thread)
+========================================================
+~/devel/mb-util/lib/mb/util/debug_methods.rb:23:in `backtrace'
+~/devel/mb-util/lib/mb/util/debug_methods.rb:23:in `block (2 levels) in sigquit_backtrace'
+~/devel/mb-util/lib/mb/util/debug_methods.rb:21:in `each'
+~/devel/mb-util/lib/mb/util/debug_methods.rb:21:in `block in sigquit_backtrace'
+~/.rvm/gems/ruby-2.7.8@mb-util/gems/pry-0.14.1/lib/pry/repl.rb:198:in `readline'
+~/.rvm/gems/ruby-2.7.8@mb-util/gems/pry-0.14.1/lib/pry/repl.rb:198:in `block in input_readline'
+.
+.
+.
+```
+
 ## Installation and usage
 
 This project can be experimented with by cloning the Git repo, or you can use
