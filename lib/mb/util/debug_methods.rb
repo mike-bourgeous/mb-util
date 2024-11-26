@@ -18,8 +18,9 @@ module MB
         MB::U.color_trace([])
 
         trap :QUIT do
-          Thread.list.each do |t|
-            MB::U.headline "Thread #{MB::U.highlight(t)}#{t == Thread.current ? ' (current thread)' : ''}"
+          thread_count = Thread.list.count
+          Thread.list.each.with_index do |t, idx|
+            MB::U.headline "Thread #{idx + 1}/#{thread_count}: #{MB::U.highlight(t)}#{t == Thread.current ? ' (current thread)' : ''}"
             puts MB::U.color_trace(t.backtrace)
           end
         end
