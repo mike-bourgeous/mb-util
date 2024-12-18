@@ -109,6 +109,38 @@ module MB
         lines = lines[1..-1] if lines[0] =~ /^#!/
         lines.take_while { |l| l =~ comment_regexp }.map { |l| l.sub(comment_regexp, '') }
       end
+
+      # Uses #read_header_comment to read the Ruby header from the script
+      # calling this method, then prints the header with some useful
+      # highlighting for displaying application help.
+      #
+      # The first header line will be displayed as a headline using
+      # TextMethods#headline.
+      #
+      # Occurrences of the exact string "$0" will be replaced with the actual
+      # $0 command line of the running application and highlighted.
+      #
+      # If +:print+ is false, then nothing is printed and the lines that would
+      # have been displayed are returned in an Array.
+      def print_header_help(filename = caller_locations(1, 1)[0].absolute_path, print: true)
+        # TODO: Markdown formatting?
+        # TODO: highlight argument definitions?
+
+        lines = read_header_comment(filename).map(&:rstrip)
+
+        output = [
+          "",
+          *MB::U.headline(lines.shift, print: false).lines.map(&:rstrip),
+          *lines.map { |l| l.gsub("$0", "\e[1m#{$0}\e[0m") },
+          "",
+        ]
+
+        if print
+          puts output
+        else
+          output
+        end
+      end
     end
   end
 end

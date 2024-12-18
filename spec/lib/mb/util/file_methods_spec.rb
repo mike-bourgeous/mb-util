@@ -4,12 +4,30 @@ RSpec.describe(MB::Util::FileMethods) do
   describe '#read_header_comment' do
     it 'can read the header comment lines from a Ruby script' do
       header = MB::U.read_header_comment('bin/console')
-      expect(header.length).to eq(6)
+      expect(header.length).to eq(8)
 
       header = header.join
       expect(header).to match(/ Pry/m)
       expect(header).to match(/spec/m)
       expect(header).not_to match(/^require /m)
+    end
+  end
+
+  describe '#print_header_help' do
+    it 'can pretty-print help from a script header' do
+      expect(MB::U.print_header_help('bin/console', print: false)).to eq([
+        "",
+        "\e[1;33mInteractive Pry console.\e[0m",
+        "\e[1;33m========================\e[0m",
+        "",
+        "Started within the MB::Util context for easy interactive testing.",
+        "",
+        "Note: this comment is used as part of a spec, so verify specs when changing",
+        "this header comment.",
+        "",
+        "Usage: \e[1m#{$0}\e[0m",
+        "",
+      ])
     end
   end
 
