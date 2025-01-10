@@ -90,6 +90,39 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
       expect(error.backtrace_locations).to be_nil
       expect(MB::U.color_trace(error)).to include('no trace')
     end
+
+    it 'includes cause information in an exception' do
+      error = nil
+      begin
+        begin
+          raise 'inner'
+        rescue => e
+          raise 'outer'
+        end
+      rescue => e
+        error = e
+      end
+
+      text = MB::U.color_trace(error)
+      expect(text).to match(/outer.*caused by.*inner/m)
+    end
+
+    it 'can be told not to follow the cause chain of an exception' do
+      error = nil
+      begin
+        begin
+          raise 'inner'
+        rescue => e
+          raise 'outer'
+        end
+      rescue => e
+        error = e
+      end
+
+      text = MB::U.color_trace(error, trace_causes: false)
+      expect(text).to include('outer')
+      expect(text).not_to include('inner')
+    end
   end
 
   describe '#syntax' do

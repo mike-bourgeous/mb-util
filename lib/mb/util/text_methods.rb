@@ -140,7 +140,13 @@ module MB
       #
       # The +:exclude+ parameter may be a regular expression.  Any backtrace
       # element that matches the regular epxression will be excluded.
-      def color_trace(trace, exclude: nil)
+      #
+      # The +:prefix+ parameter is prepended to each line.  This may be used
+      # for adding indentation or timestamps.
+      #
+      # If +:trace_causes+ is false, then exception causes are not added to the
+      # message.
+      def color_trace(trace, exclude: nil, prefix: nil, trace_causes: true)
         case trace
         when Array
           unless trace.all? { |t| t.is_a?(Thread::Backtrace::Location) || t.is_a?(String) }
@@ -172,12 +178,24 @@ module MB
             path, sep, name = fullpath.rpartition('/')
             path = path.sub(/^#{Regexp.escape(home)}/, '~')
 
-            "\e[38;5;240m#{path}#{sep}\e[36m#{name}\e[38;5;240m:\e[1;34m#{line}\e[0;38;5;240m:\e[33min `\e[1;35m#{label}\e[0;33m'\e[0m"
+            "#{prefix}\e[38;5;240m#{path}#{sep}\e[36m#{name}\e[38;5;240m:\e[1;34m#{line}\e[0;38;5;240m:\e[33min `\e[1;35m#{label}\e[0;33m'\e[0m"
           }.join("\n")
 
         when Exception
-          bt = color_trace(trace.backtrace_locations || trace.backtrace, exclude: exclude).gsub("\n", "\n\t")
-          "\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n\t#{bt}\n\e[0;31m>\e[0m"
+          bt = color_trace(trace.backtrace_locations || trace.backtrace, exclude: exclude, prefix: "#{prefix}\t")
+          msg = "#{prefix}\e[31m#<#{trace.class}: \e[1m#{trace.message}\e[22m:\n#{bt}\n\e[0;31m>\e[0m"
+
+          trace_set = {trace: true}
+          ex = trace
+          while trace_causes && ex.cause && !trace_set.include?(ex.cause)
+            # TODO: exclude backtrace lines from prior exceptions
+            ex = ex.cause
+            trace_set[ex] = true
+            cause_trace = color_trace(ex, exclude: exclude, prefix: "#{prefix}\t", trace_causes: trace_causes)
+            msg << "\n#{prefix}\t\e[31m... caused by\e[0m #{cause_trace.lstrip}\n"
+          end
+
+          msg
 
         when nil
           '[no trace]'
