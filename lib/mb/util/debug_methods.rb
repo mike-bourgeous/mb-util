@@ -2,6 +2,17 @@ module MB
   module Util
     # Methods to help with debugging code.
     module DebugMethods
+      # Prints a colorized backtrace for each thread.
+      #
+      # See #sigquit_backtrace
+      def all_threads_backtrace
+        thread_count = Thread.list.count
+        Thread.list.each.with_index do |t, idx|
+          MB::U.headline "Thread #{idx + 1}/#{thread_count}: #{MB::U.highlight(t)}#{t == Thread.current ? ' (current thread)' : ''}"
+          puts MB::U.color_trace(t.backtrace)
+        end
+      end
+
       # Installs a signal handler for SIGQUIT to print a backtrace of all
       # threads.  This will be useful if you think a program or thread is stuck
       # somewhere, but you aren't sure -- you can send SIGQUIT (or press Ctrl-\
@@ -18,11 +29,7 @@ module MB
         MB::U.color_trace([])
 
         trap :QUIT do
-          thread_count = Thread.list.count
-          Thread.list.each.with_index do |t, idx|
-            MB::U.headline "Thread #{idx + 1}/#{thread_count}: #{MB::U.highlight(t)}#{t == Thread.current ? ' (current thread)' : ''}"
-            puts MB::U.color_trace(t.backtrace)
-          end
+          all_threads_backtrace
         end
       end
     end
