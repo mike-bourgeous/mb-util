@@ -4,8 +4,13 @@ module MB
     module DebugMethods
       # Prints a colorized backtrace for each thread.
       #
+      # If the +:headline+ parameter is not nil, then it will be printed using
+      # MB::U.headline before printing the stack trace.
+      #
       # See #sigquit_backtrace
-      def all_threads_backtrace
+      def all_threads_backtrace(headline: nil)
+        MB::U.headline(headline) if headline
+
         thread_count = Thread.list.count
         Thread.list.each.with_index do |t, idx|
           MB::U.headline "Thread #{idx + 1}/#{thread_count}: #{MB::U.highlight(t)}#{t == Thread.current ? ' (current thread)' : ''}"
@@ -19,6 +24,9 @@ module MB
       # if running in a terminal) to print a stack trace without killing the
       # program.
       #
+      # If the +:headline+ parameter is not nil, then it will be printed using
+      # MB::U.headline before printing the stack trace.
+      #
       # If a block is given, then the signal handler will yield to the block
       # after printing each trace.  This can be used to change some variables
       # or print additional information when SIGQUIT is pressed.  Note that
@@ -31,13 +39,15 @@ module MB
       # handler.
       #
       # Credit where due: this is inspired by Java's SIGQUIT behavior.
-      def sigquit_backtrace
+      #
+      # See #all_threads_backtrace
+      def sigquit_backtrace(headline: nil)
         # pre-load requirements outside of trap context (these methods may call require)
         MB::U.highlight(nil)
         MB::U.color_trace([])
 
         trap :QUIT do
-          all_threads_backtrace
+          all_threads_backtrace(headline: headline)
           yield if block_given?
         end
       end

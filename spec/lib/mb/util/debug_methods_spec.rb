@@ -20,6 +20,17 @@ RSpec.describe(MB::U::DebugMethods, :aggregate_failures) do
       t1&.kill
       t2&.kill
     end
+
+    it 'can print a headline before printing traces' do
+      expect(MB::Util).to receive(:puts).with(/This is a headline/)
+
+      Thread.list.count.times do
+        expect(MB::Util).to receive(:puts).with(/Thread \d/)
+        expect(MB::Util).to receive(:puts).with(/rspec|sleep|timeout|^$/)
+      end
+
+      MB::U.all_threads_backtrace(headline: 'This is a headline')
+    end
   end
 
   describe '#sigquit_backtrace' do
@@ -46,6 +57,7 @@ RSpec.describe(MB::U::DebugMethods, :aggregate_failures) do
       it_behaves_like 'the stack trace test program'
 
       it 'can yield to a block after printing the backtrace' do
+        expect(output).to include('With block')
         expect(output).to include('Yielded!')
       end
     end

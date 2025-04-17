@@ -8,7 +8,7 @@ require 'bundler/setup'
 require 'mb/util'
 
 if ARGV.include?('--yield')
-  MB::U.sigquit_backtrace { puts 'Yielded!' }
+  MB::U.sigquit_backtrace(headline: 'With block') { puts 'Yielded!' }
 else
   MB::U.sigquit_backtrace
 end
