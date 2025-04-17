@@ -19,6 +19,14 @@ module MB
       # if running in a terminal) to print a stack trace without killing the
       # program.
       #
+      # If a block is given, then the signal handler will yield to the block
+      # after printing each trace.  This can be used to change some variables
+      # or print additional information when SIGQUIT is pressed.  Note that
+      # this yield happens within the signal handler context, meaning you
+      # cannot acquire locks, run a Pry console, etc.  If you need to do these
+      # things, just set a flag that gets read by your main thread, and have
+      # the main thread take action.
+      #
       # Run this function once as your program starts to install the SIGQUIT
       # handler.
       #
@@ -30,6 +38,7 @@ module MB
 
         trap :QUIT do
           all_threads_backtrace
+          yield if block_given?
         end
       end
     end

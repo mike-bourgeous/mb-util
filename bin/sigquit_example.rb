@@ -7,7 +7,11 @@ require 'bundler/setup'
 
 require 'mb/util'
 
-MB::U.sigquit_backtrace
+if ARGV.include?('--yield')
+  MB::U.sigquit_backtrace { puts 'Yielded!' }
+else
+  MB::U.sigquit_backtrace
+end
 
 def f1
   f2

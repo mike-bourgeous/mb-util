@@ -23,22 +23,41 @@ RSpec.describe(MB::U::DebugMethods, :aggregate_failures) do
   end
 
   describe '#sigquit_backtrace' do
-    it 'works correctly in the example program' do
-      # Maybe there's a way to simulate a trap/signal in RSpec, but just
-      # calling out to another program seems easy enough
-      output = `bin/sigquit_example.rb 2>&1`
-      expect($?.success?).to eq(true)
+    shared_examples_for 'the stack trace test program' do
+      it 'prints traces for each thread' do
+        expect(output).not_to be_nil
+        expect($?.success?).to eq(true)
+        expect(output).to include('Thread 1')
+        expect(output).to include('Thread 2')
+        expect(output).to include('Thread 3')
+        expect(output).to include('Thread 4')
+        expect(output).to include('Thread 5')
+        expect(output).to include('f1')
+        expect(output).to include('f2')
+        expect(output).to include('f3')
+        expect(output).to include('sleep')
+        expect(output).to include('Shutting down')
+      end
+    end
 
-      expect(output).to include('Thread 1')
-      expect(output).to include('Thread 2')
-      expect(output).to include('Thread 3')
-      expect(output).to include('Thread 4')
-      expect(output).to include('Thread 5')
-      expect(output).to include('f1')
-      expect(output).to include('f2')
-      expect(output).to include('f3')
-      expect(output).to include('sleep')
-      expect(output).to include('Shutting down')
+    context 'with a block' do
+      let(:output) { `bin/sigquit_example.rb --yield 2>&1` }
+
+      it_behaves_like 'the stack trace test program'
+
+      it 'can yield to a block after printing the backtrace' do
+        expect(output).to include('Yielded!')
+      end
+    end
+
+    context 'without a block' do
+      let(:output) { `bin/sigquit_example.rb 2>&1` }
+
+      it_behaves_like 'the stack trace test program'
+
+      it 'does not call what should only be in a block in the test program' do
+        expect(output).not_to include('Yielded!')
+      end
     end
   end
 end
