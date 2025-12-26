@@ -12,6 +12,9 @@ module MB
         end
       end
 
+      # Regular expression pattern for a Ruby language file header comment.
+      RUBY_COMMENT = /^#( |$)/
+
       # Checks if +filename+ already exists.
       #
       # If the file exists and +:prompt+ is true, then the user is asked
@@ -104,36 +107,45 @@ module MB
       # the +:comment_regexp+, removing the first instance of +:comment_regexp+
       # from each line, and skipping an initial shebang line ("#!...") if
       # present.
-      def read_header_comment(filename = caller_locations(1,1)[0].absolute_path, comment_regexp: /^#( |$)/)
+      def read_header_comment(filename = caller_locations(1,1)[0].absolute_path, comment_regexp: RUBY_COMMENT)
         lines = File.readlines(filename)
         lines = lines[1..-1] if lines[0] =~ /^#!/
         lines.take_while { |l| l =~ comment_regexp }.map { |l| l.sub(comment_regexp, '') }
       end
 
-      # Uses #read_header_comment to read the Ruby header from the script
+      # Highlights and returns the text from #read_header_comment as an Array
+      # of lines, for display as program help.
+      #
+      # Occurrences of the exact string "$0" will be replaced with the actual
+      # $0 command line of the running application and highlighted.
+      def highlight_header_comment(filename = caller_locations(1, 1)[0].absolute_path, comment_regexp: RUBY_COMMENT)
+        # TODO: Markdown formatting?
+        # TODO: highlight argument definitions?
+
+        lines = read_header_comment(filename).map(&:rstrip)
+
+        [
+          "",
+          *MB::U.headline(lines.shift, print: false).lines.map(&:rstrip),
+          *lines.map { |l| l.gsub("$0", "\e[1m#{$0}\e[0m") },
+          "",
+        ]
+      end
+
+      # Uses #highlight_header_comment to read the Ruby header from the script
       # calling this method, then prints the header with some useful
       # highlighting for displaying application help.
       #
       # The first header line will be displayed as a headline using
       # TextMethods#headline.
       #
-      # Occurrences of the exact string "$0" will be replaced with the actual
-      # $0 command line of the running application and highlighted.
-      #
       # If +:print+ is false, then nothing is printed and the lines that would
       # have been displayed are returned in an Array.
+      #
+      # See #read_header_comment.
+      # See #highlight_header_comment.
       def print_header_help(filename = caller_locations(1, 1)[0].absolute_path, print: true)
-        # TODO: Markdown formatting?
-        # TODO: highlight argument definitions?
-
-        lines = read_header_comment(filename).map(&:rstrip)
-
-        output = [
-          "",
-          *MB::U.headline(lines.shift, print: false).lines.map(&:rstrip),
-          *lines.map { |l| l.gsub("$0", "\e[1m#{$0}\e[0m") },
-          "",
-        ]
+        output = highlight_header_comment(filename)
 
         if print
           puts output

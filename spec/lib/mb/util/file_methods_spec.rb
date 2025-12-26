@@ -13,9 +13,9 @@ RSpec.describe(MB::Util::FileMethods) do
     end
   end
 
-  describe '#print_header_help' do
-    it 'can pretty-print help from a script header' do
-      expect(MB::U.print_header_help('bin/console', print: false)).to eq([
+  shared_examples_for 'highlight_header_comment' do
+    it 'can highlight help from a script header' do
+      expect(result).to eq([
         "",
         "\e[1;33mInteractive Pry console.\e[0m",
         "\e[1;33m========================\e[0m",
@@ -28,6 +28,18 @@ RSpec.describe(MB::Util::FileMethods) do
         "Usage: \e[1m#{$0}\e[0m",
         "",
       ])
+    end
+  end
+
+  describe '#highlight_header_comment' do
+    let(:result) { MB::U.highlight_header_comment('bin/console') }
+    it_behaves_like 'highlight_header_comment'
+  end
+
+  describe '#print_header_help' do
+    context 'when :print is false' do
+      let(:result) { MB::U.print_header_help('bin/console', print: false) }
+      it_behaves_like 'highlight_header_comment'
     end
   end
 
