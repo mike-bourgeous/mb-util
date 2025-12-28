@@ -25,7 +25,7 @@ RSpec.describe(MB::Util::FileMethods) do
         "Note: this comment is used as part of a spec, so verify specs when changing",
         "this header comment.",
         "",
-        "Usage: \e[1m#{$0}\e[0m",
+        "Usage: \e[1mbin/console\e[0m",
         "",
       ])
     end

@@ -1,3 +1,5 @@
+require 'pathname'
+
 module MB
   module Util
     # Methods useful for working with files, such as interactive prompts to
@@ -117,17 +119,19 @@ module MB
       # of lines, for display as program help.
       #
       # Occurrences of the exact string "$0" will be replaced with the actual
-      # $0 command line of the running application and highlighted.
+      # filename and highlighted.
       def highlight_header_comment(filename = caller_locations(1, 1)[0].absolute_path, comment_regexp: RUBY_COMMENT)
         # TODO: Markdown formatting?
         # TODO: highlight argument definitions?
 
         lines = read_header_comment(filename).map(&:rstrip)
 
+        cmdname = Pathname.new(File.expand_path('.', filename)).relative_path_from(Dir.pwd)
+
         [
           "",
           *MB::U.headline(lines.shift, print: false).lines.map(&:rstrip),
-          *lines.map { |l| l.gsub("$0", "\e[1m#{$0}\e[0m") },
+          *lines.map { |l| l.gsub("$0", "\e[1m#{cmdname}\e[0m") },
           "",
         ]
       end
