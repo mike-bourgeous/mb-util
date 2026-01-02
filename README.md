@@ -184,9 +184,19 @@ The utility functions will make use of the `coderay`, `pry`, and `word_wrap`
 Gems if they are available in your project, but these are optional:
 
 ```ruby
+# For MB::U.syntax and MB::U.highlight
 gem 'pry'
 gem 'coderay'
 gem 'word_wrap'
+```
+
+The `MB::U.bench_csv` method in `MB::Util::BenchmarkMethods` requires the
+Benchmark and CSV gems as well:
+
+```ruby
+# For MB::U.bench_csv
+gem 'benchmark'
+gem 'csv'
 ```
 
 ## Testing

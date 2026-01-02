@@ -23,6 +23,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_development_dependency 'benchmark', '~> 0.5.0'
+  spec.add_development_dependency 'csv', '~> 3.3.5'
+
   spec.add_development_dependency 'word_wrap'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'pry'

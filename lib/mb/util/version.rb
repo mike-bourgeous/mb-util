@@ -1,5 +1,5 @@
 module MB
   module Util
-    VERSION = "0.1.26.usegit"
+    VERSION = "0.1.27.usegit"
   end
 end

@@ -6,6 +6,7 @@ require_relative 'util/platform_methods'
 require_relative 'util/file_methods'
 require_relative 'util/debug_methods'
 require_relative 'util/cli_methods'
+require_relative 'util/benchmark_methods'
 
 module MB
   # General purpose utility functions, e.g. for dealing with the display.
@@ -19,6 +20,7 @@ module MB
     extend FileMethods
     extend DebugMethods
     extend CliMethods
+    extend BenchmarkMethods
   end
 
   # MB::U is a convenient shorthand for MB::Util.
