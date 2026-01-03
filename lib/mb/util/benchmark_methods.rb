@@ -86,17 +86,26 @@ module MB
 
       # Returns true if MJIT, YJIT, or RJIT is enabled, false otherwise.
       def jit_enabled?
-        (defined?(RubyVM::MJIT) && RubyVM::MJIT.respond_to?(:enabled?) && RubyVM::MJIT.enabled?) ||
-          (defined?(RubyVM::YJIT) && RubyVM::YJIT.respond_to?(:enabled?) && RubyVM::YJIT.enabled?) ||
-          (defined?(RubyVM::RJIT) && RubyVM::RJIT.respond_to?(:enabled?) && RubyVM::RJIT.enabled?) ||
-          (defined?(RubyVM::JIT) && RubyVM::JIT.respond_to?(:enabled?) && RubyVM::JIT.enabled?) ||
-          false
+        !!jit_variant
+      end
+
+      # Returns :mjit, :yjit, :rjit, or :jit depending on which JIT class is
+      # defined and reports itself as enabled.  Returns false if JIT is
+      # disabled.
+      def jit_variant
+        return :mjit if defined?(RubyVM::MJIT) && RubyVM::MJIT.respond_to?(:enabled?) && RubyVM::MJIT.enabled?
+        return :rjit if defined?(RubyVM::RJIT) && RubyVM::RJIT.respond_to?(:enabled?) && RubyVM::RJIT.enabled?
+        return :yjit if defined?(RubyVM::YJIT) && RubyVM::YJIT.respond_to?(:enabled?) && RubyVM::YJIT.enabled?
+        return :zjit if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.respond_to?(:enabled?) && RubyVM::ZJIT.enabled?
+        return :jit if defined?(RubyVM::JIT) && RubyVM::JIT.respond_to?(:enabled?) && RubyVM::JIT.enabled?
+
+        false
       end
 
       # Returns a Hash with the engine, version number, and JIT status of the
       # Ruby VM.  This may be passed to the +:prefix+ parameter of #bench_csv.
       def ruby_info
-        { ruby: [RUBY_ENGINE, RUBY_ENGINE_VERSION, RUBY_VERSION].compact.uniq.join('-'), jit: MB::U.jit_enabled? }
+        { ruby: [RUBY_ENGINE, RUBY_ENGINE_VERSION, RUBY_VERSION].compact.uniq.join('-'), jit: MB::U.jit_variant }
       end
     end
   end

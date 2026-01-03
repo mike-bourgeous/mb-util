@@ -57,6 +57,41 @@ RSpec.describe(MB::Util::BenchmarkMethods, aggregate_failures: true) do
     end
   end
 
+  describe '#jit_variant' do
+    if defined?(RubyVM::MJIT)
+      it 'can return mjit' do
+        if `ruby --help`.include?('--mjit')
+          opts = '--mjit'
+        else
+          opts = '--jit'
+        end
+        expect(`RUBYOPT=#{opts} ./spec/scripts/jit_variant.rb`.strip).to eq('mjit')
+      end
+    end
+
+    if defined?(RubyVM::RJIT)
+      it 'can return rjit' do
+        expect(`RUBYOPT=--rjit ./spec/scripts/jit_variant.rb`.strip).to eq('rjit')
+      end
+    end
+
+    if defined?(RubyVM::YJIT)
+      it 'can return yjit' do
+        expect(`RUBYOPT=--yjit ./spec/scripts/jit_variant.rb`.strip).to eq('yjit')
+      end
+    end
+
+    if defined?(RubyVM::ZJIT)
+      it 'can return zjit' do
+        expect(`RUBYOPT=--zjit ./spec/scripts/jit_variant.rb`.strip).to eq('zjit')
+      end
+    end
+
+    it 'can return false' do
+      expect(`RUBYOPT='' ./spec/scripts/jit_variant.rb`.strip).to eq('false')
+    end
+  end
+
   describe '#jit_enabled?' do
     it 'returns true if JIT was enabled with RUBYOPT' do
       expect(`RUBYOPT=--jit ./spec/scripts/jit_enabled.rb`.strip).to eq('true')
@@ -69,7 +104,7 @@ RSpec.describe(MB::Util::BenchmarkMethods, aggregate_failures: true) do
 
   describe '#ruby_info' do
     it 'returns a hash with JIT status and Ruby version' do
-      expect(MB::U.ruby_info).to eq({ ruby: [RUBY_ENGINE, RUBY_ENGINE_VERSION, RUBY_VERSION].compact.uniq.join('-'), jit: MB::U.jit_enabled? })
+      expect(MB::U.ruby_info).to eq({ ruby: [RUBY_ENGINE, RUBY_ENGINE_VERSION, RUBY_VERSION].compact.uniq.join('-'), jit: MB::U.jit_variant })
     end
   end
 end
