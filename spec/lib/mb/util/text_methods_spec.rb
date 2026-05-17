@@ -180,6 +180,11 @@ RSpec.describe(MB::Util::TextMethods, aggregate_failures: true) do
       result = MB::U.headline('Hello', prefix: '  --  ', print: false)
       expect(result).to eq("  --  \e[1;33mHello\e[0m\n  --  \e[1;33m=====\e[0m")
     end
+
+    it 'can write to a different output target' do
+      expect($stderr).to receive(:puts).with("\n\e[1;33mHey\e[0m\n\e[1;33m^^^\e[0m\n")
+      MB::U.headline('Hey', underline: '^', print: $stderr)
+    end
   end
 
   describe '#table' do

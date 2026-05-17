@@ -223,15 +223,27 @@ module MB
 
       # Prints (or returns if +:print+ is false) the given +text+, followed by
       # a double underline composed of a string of +:underline+ of the same
-      # length, using the given ANSI/xterm +:color+.  The +:prefix+ string, if
-      # present, will be prepended to both lines of the headline, without
-      # color.  If printing, an extra newline is printed before the text.
+      # length, using the given ANSI/xterm +:color+.
+      #
+      # The +:print+ option may be true (the default) to print to stdout,
+      # falsy, or an I/O object that responds to :puts (e.g. $stderr).
+      #
+      # The +:prefix+ string, if present, will be prepended to both lines of
+      # the headline, without color.  If printing, an extra newline is printed
+      # before the text.
       def headline(text, color: '1;33', underline: '=', print: true, prefix: nil)
         len = remove_ansi(text).length
         str = "#{prefix}\e[#{color}m#{text}\e[0m\n#{prefix}\e[#{color}m#{underline * len}\e[0m"
 
         if print
-          puts "\n#{str}\n"
+          pstr = "\n#{str}\n"
+
+          if print.respond_to?(:puts)
+            print.puts pstr
+          else
+            puts pstr
+          end
+
         else
           str
         end
